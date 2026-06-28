@@ -8,10 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Select from '@/components/ui/AppSelect';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import client from '../../api/client';
 import CheckoutModal from '../../components/receipt/CheckoutModal';
+import BatchCheckoutModal from '../../components/caisse/BatchCheckoutModal';
 import CaisseMobileCardList from '../../components/caisse/CaisseMobileCardList';
 import CaisseFilterSheet from '../../components/caisse/CaisseFilterSheet';
 import MobileActionSheet from '../../components/mobile/MobileActionSheet';
@@ -34,6 +36,10 @@ const TYPE_TAG_CLASS = {
   delivery: 'border-purple-200 bg-purple-50 text-purple-800',
 };
 
+function isBatchEligible(row) {
+  return row?.can_pay && row.order?.payment_status === 'unpaid';
+}
+
 export default function CaissePage() {
   const navigate = useNavigate();
   const { user, loading: authLoading, isPinSession } = useAuth();
@@ -50,6 +56,8 @@ export default function CaissePage() {
   const [codeLookupLoading, setCodeLookupLoading] = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [batchOpen, setBatchOpen] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -130,6 +138,38 @@ export default function CaissePage() {
 
   const hasActiveFilters = Boolean(applied.search.trim() || applied.typeFilter || tab !== 'all');
 
+  const batchEligible = useMemo(
+    () => filtered.filter(isBatchEligible),
+    [filtered],
+  );
+
+  const selectedBatchRows = useMemo(
+    () => batchEligible.filter((row) => selectedIds.has(row.order._id)),
+    [batchEligible, selectedIds],
+  );
+
+  const allEligibleSelected = batchEligible.length > 0
+    && batchEligible.every((row) => selectedIds.has(row.order._id));
+
+  const toggleSelect = (orderId) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allEligibleSelected) {
+      setSelectedIds(new Set());
+      return;
+    }
+    setSelectedIds(new Set(batchEligible.map((row) => row.order._id)));
+  };
+
+  const clearBatchSelection = () => setSelectedIds(new Set());
+
   const buildMobileActions = (row) => {
     const actions = [];
     if (row.order.type === 'delivery' && canMarkDelivered(user, row.order)) {
@@ -148,6 +188,26 @@ export default function CaissePage() {
   };
 
   const columns = [
+    {
+      key: 'select',
+      title: (
+        <Checkbox
+          checked={allEligibleSelected}
+          disabled={!batchEligible.length}
+          onCheckedChange={toggleSelectAll}
+          aria-label="Tout sélectionner"
+        />
+      ),
+      width: 48,
+      render: (_, r) => (
+        <Checkbox
+          checked={selectedIds.has(r.order._id)}
+          disabled={!isBatchEligible(r)}
+          onCheckedChange={() => toggleSelect(r.order._id)}
+          aria-label={`Sélectionner ${r.order.order_number}`}
+        />
+      ),
+    },
     { key: 'order_number', title: 'N°', dataIndex: ['order', 'order_number'], width: 140 },
     {
       key: 'daily_code',
@@ -266,6 +326,16 @@ export default function CaissePage() {
             {dailyCodeBlock}
             <div className="orders-mobile-toolbar">
               <Button
+                size="sm"
+                disabled={!selectedBatchRows.length}
+                onClick={() => setBatchOpen(true)}
+              >
+                <DollarSign className="size-4" data-icon="inline-start" />
+                Encaisser (
+                {selectedBatchRows.length}
+                )
+              </Button>
+              <Button
                 variant={hasActiveFilters ? 'secondary' : 'outline'}
                 size="sm"
                 onClick={() => setFilterSheetOpen(true)}
@@ -284,7 +354,14 @@ export default function CaissePage() {
             {loading ? (
               <TableLoading rows={4} columns={1} />
             ) : (
-              <CaisseMobileCardList rows={filtered} onSelect={setSelectedRow} />
+              <CaisseMobileCardList
+                rows={filtered}
+                onSelect={setSelectedRow}
+                selectionMode
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                isEligible={isBatchEligible}
+              />
             )}
           </CardContent>
         </Card>
@@ -356,6 +433,17 @@ export default function CaissePage() {
             setSelectedRow(null);
           }}
         />
+
+        <BatchCheckoutModal
+          open={batchOpen}
+          onClose={() => setBatchOpen(false)}
+          rows={selectedBatchRows}
+          onSuccess={() => {
+            load();
+            clearBatchSelection();
+            setBatchOpen(false);
+          }}
+        />
       </>
     );
   }
@@ -365,7 +453,16 @@ export default function CaissePage() {
       <Card>
         <CardHeader className="border-b border-border/60">
           <CardTitle className="text-xl font-semibold">Caisse — À encaisser</CardTitle>
-          <CardAction>
+          <CardAction className="flex flex-wrap gap-2">
+            <Button
+              disabled={!selectedBatchRows.length}
+              onClick={() => setBatchOpen(true)}
+            >
+              <DollarSign className="size-4" />
+              Encaisser la sélection (
+              {selectedBatchRows.length}
+              )
+            </Button>
             <Button variant="outline" disabled={loading} onClick={load}>
               {loading ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -432,6 +529,17 @@ export default function CaissePage() {
         onSuccess={() => {
           load();
           setCheckoutId(null);
+        }}
+      />
+
+      <BatchCheckoutModal
+        open={batchOpen}
+        onClose={() => setBatchOpen(false)}
+        rows={selectedBatchRows}
+        onSuccess={() => {
+          load();
+          clearBatchSelection();
+          setBatchOpen(false);
         }}
       />
     </>

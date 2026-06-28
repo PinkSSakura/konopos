@@ -10,9 +10,8 @@ const {
   validateShiftClose,
   closeShiftRecord,
   startShiftForUser,
-  isManagerRole,
 } = require('../services/shift-close');
-const { hasPermission } = require('../services/permission');
+const { userHasPermission } = require('../services/permission');
 const { buildWaiterDailyClosePdf } = reports;
 const {
   isShiftRole,
@@ -240,7 +239,7 @@ async function listOpenShifts(req, res, next) {
 
 async function startShiftForUserHandler(req, res, next) {
   try {
-    if (!hasPermission(req.user, 'shift_manage')) {
+    if (!(await userHasPermission(req.user, 'shift_manage', getEstablishmentId(req)))) {
       return res.status(403).json({ success: false, message: 'Permission shift_manage requise.' });
     }
     const estId = getEstablishmentId(req);
@@ -278,7 +277,7 @@ async function closeShiftForUserHandler(req, res, next) {
     const targetId = req.body?.user_id || req.user._id;
     const isSelf = String(targetId) === String(req.user._id);
 
-    if (!isSelf && !hasPermission(req.user, 'shift_manage')) {
+    if (!isSelf && !(await userHasPermission(req.user, 'shift_manage', estId))) {
       return res.status(403).json({ success: false, message: 'Permission shift_manage requise.' });
     }
     if (isSelf && !isShiftRole(req.user?.role?.role_key)) {

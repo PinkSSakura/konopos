@@ -1,5 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { orderStatusLabel } from '../../utils/orderStatusLabels';
 
@@ -21,7 +22,14 @@ const statusBadgeClass = {
   cancelled: 'border-red-200 bg-red-50 text-red-800',
 };
 
-export default function CaisseMobileCardList({ rows, onSelect }) {
+export default function CaisseMobileCardList({
+  rows,
+  onSelect,
+  selectionMode = false,
+  selectedIds = new Set(),
+  onToggleSelect,
+  isEligible,
+}) {
   if (!rows.length) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
@@ -38,48 +46,64 @@ export default function CaisseMobileCardList({ rows, onSelect }) {
           ? `Table ${order.table.name}`
           : (TYPE_LABELS[order.type] || order.type);
         const balance = row.amounts?.balance_due;
+        const eligible = isEligible ? isEligible(row) : false;
+        const checked = selectedIds.has(order._id);
 
         return (
           <li key={order._id}>
-            <button
-              type="button"
-              className="orders-mobile-card"
-              onClick={() => onSelect(row)}
-            >
-              <div className="orders-mobile-card__header">
-                <span className="orders-mobile-card__table">{tableLabel}</span>
-                <Badge
-                  variant="outline"
-                  className={cn('shrink-0', statusBadgeClass[order.status])}
-                >
-                  {orderStatusLabel(order.status)}
-                </Badge>
-              </div>
-              <div className="orders-mobile-card__meta">
-                <span className="orders-mobile-card__number">{order.order_number}</span>
-                {order.daily_code != null && (
-                  <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-800">
-                    Code {String(order.daily_code).padStart(4, '0')}
+            <div className="orders-mobile-card flex gap-3">
+              {selectionMode && (
+                <div className="flex items-start pt-1">
+                  <Checkbox
+                    checked={checked}
+                    disabled={!eligible}
+                    onCheckedChange={() => onToggleSelect?.(order._id)}
+                    aria-label={`Sélectionner ${order.order_number}`}
+                  />
+                </div>
+              )}
+              <button
+                type="button"
+                className="min-w-0 flex-1 text-left"
+                onClick={() => (selectionMode && eligible
+                  ? onToggleSelect?.(order._id)
+                  : onSelect(row))}
+              >
+                <div className="orders-mobile-card__header">
+                  <span className="orders-mobile-card__table">{tableLabel}</span>
+                  <Badge
+                    variant="outline"
+                    className={cn('shrink-0', statusBadgeClass[order.status])}
+                  >
+                    {orderStatusLabel(order.status)}
                   </Badge>
-                )}
-                <Badge variant="outline" className={TYPE_TAG_CLASS[order.type]}>
-                  {TYPE_LABELS[order.type]}
-                </Badge>
-                {order.payment_status === 'partial' && (
-                  <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-800">
-                    Paiement partiel
+                </div>
+                <div className="orders-mobile-card__meta">
+                  <span className="orders-mobile-card__number">{order.order_number}</span>
+                  {order.daily_code != null && (
+                    <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-800">
+                      Code {String(order.daily_code).padStart(4, '0')}
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className={TYPE_TAG_CLASS[order.type]}>
+                    {TYPE_LABELS[order.type]}
                   </Badge>
-                )}
-              </div>
-              <div className="orders-mobile-card__footer">
-                <span className="orders-mobile-card__total">
-                  {balance != null ? `${Number(balance).toFixed(2)} MAD` : '—'}
-                </span>
-                {order.waiter?.fullname && (
-                  <span className="text-xs text-muted-foreground">{order.waiter.fullname}</span>
-                )}
-              </div>
-            </button>
+                  {order.payment_status === 'partial' && (
+                    <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-800">
+                      Paiement partiel
+                    </Badge>
+                  )}
+                </div>
+                <div className="orders-mobile-card__footer">
+                  <span className="orders-mobile-card__total">
+                    {balance != null ? `${Number(balance).toFixed(2)} MAD` : '—'}
+                  </span>
+                  {order.waiter?.fullname && (
+                    <span className="text-xs text-muted-foreground">{order.waiter.fullname}</span>
+                  )}
+                </div>
+              </button>
+            </div>
           </li>
         );
       })}

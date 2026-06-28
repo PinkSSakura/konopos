@@ -9,6 +9,7 @@ const { finalizeDirectPinLogout } = auth;
 const {
   listReadyToPay,
   processCheckout,
+  processBatchCheckout,
   voidPayment,
   listPaymentHistory,
   getDailySummary,
@@ -120,6 +121,53 @@ async function checkout(req, res, next) {
         end_quick_waiter_session: endQuickWaiterSession,
       },
     });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ success: false, message: err.message });
+    return next(err);
+  }
+}
+
+async function batchCheckout(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const orderIds = Array.isArray(req.body?.order_ids) ? req.body.order_ids : [];
+
+    for (const orderId of orderIds) {
+      const order = await Order.findOne({ _id: orderId, establishment: estId, is_deleted: false });
+      if (!order) continue;
+      try {
+        await assertWaiterOrderAccess(req, order, 'payment');
+      } catch (err) {
+        return handleAccessError(res, err, next);
+      }
+    }
+
+    const result = await processBatchCheckout(estId, req.user, req.body);
+
+    for (const row of result.succeeded) {
+      await logStaffActivity({
+        establishment: estId,
+        user: req.user,
+        action: 'checkout',
+        module: 'payments',
+        resource: 'payment',
+        resource_id: row.payment_id,
+        description: `Encaissement groupé ${row.order_number || ''} — ${Number(row.amount || 0).toFixed(2)} MAD`,
+        metadata: { order_id: row.order_id, method: result.method, batch: true },
+        req,
+      });
+      emitOrderChanged(estId, row.order_id);
+      if (row.table) emitTablesChanged(estId, row.room);
+    }
+
+    const successCount = result.succeeded.length;
+    const failCount = result.failed.length;
+    let message = `${successCount} commande(s) encaissée(s).`;
+    if (failCount) {
+      message += ` ${failCount} ignorée(s).`;
+    }
+
+    res.json({ success: true, data: result, message });
   } catch (err) {
     if (err.status) return res.status(err.status).json({ success: false, message: err.message });
     return next(err);
@@ -243,6 +291,7 @@ module.exports = {
   listReady,
   lookupByDailyCode,
   checkout,
+  batchCheckout,
   voidPaymentHandler,
   history,
   dailySummary,

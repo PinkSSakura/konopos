@@ -443,6 +443,135 @@ async function processCheckout(establishmentId, orderId, user, body) {
   };
 }
 
+async function processBatchCheckout(establishmentId, user, body) {
+  const orderIds = Array.isArray(body.order_ids) ? [...new Set(body.order_ids.map(String))] : [];
+  if (!orderIds.length) {
+    const err = new Error('Sélectionnez au moins une commande.');
+    err.status = 400;
+    throw err;
+  }
+  if (orderIds.length > 50) {
+    const err = new Error('Maximum 50 commandes par encaissement groupé.');
+    err.status = 400;
+    throw err;
+  }
+
+  const method = body.method || 'cash';
+  if (!METHODS.includes(method)) {
+    const err = new Error('Mode de paiement invalide.');
+    err.status = 400;
+    throw err;
+  }
+  if (['credit', 'debit'].includes(method) && !body.customer_id) {
+    const err = new Error('Client régulier requis pour crédit ou débit compte.');
+    err.status = 400;
+    throw err;
+  }
+
+  const prepared = [];
+  for (const orderId of orderIds) {
+    const order = await Order.findOne({
+      _id: orderId,
+      establishment: establishmentId,
+      is_deleted: false,
+    });
+    if (!order) {
+      prepared.push({ orderId, error: 'Commande introuvable.' });
+      continue;
+    }
+    if (order.payment_status !== 'unpaid') {
+      prepared.push({
+        orderId,
+        error: 'Seules les commandes entièrement impayées sont éligibles.',
+      });
+      continue;
+    }
+    const items = await OrderItem.find({ order: order._id });
+    const check = canPayOrder(order, items);
+    if (!check.ok) {
+      prepared.push({ orderId, error: check.reason });
+      continue;
+    }
+    const amounts = calcOrderAmounts(order, items);
+    if (amounts.balance_due <= 0.001) {
+      prepared.push({ orderId, error: 'Commande déjà réglée.' });
+      continue;
+    }
+    prepared.push({ orderId, order, due: amounts.balance_due });
+  }
+
+  const eligible = prepared.filter((entry) => entry.order);
+  const totalDue = Math.round(eligible.reduce((sum, entry) => sum + entry.due, 0) * 100) / 100;
+
+  let cashRemaining = null;
+  if (method === 'cash') {
+    cashRemaining = Number(body.amount_tendered);
+    if (!Number.isFinite(cashRemaining) || cashRemaining < totalDue - 0.001) {
+      const err = new Error('Montant reçu insuffisant pour la sélection.');
+      err.status = 400;
+      throw err;
+    }
+  }
+
+  const succeeded = [];
+  const failed = prepared.filter((entry) => entry.error).map((entry) => ({
+    order_id: entry.orderId,
+    message: entry.error,
+  }));
+
+  for (let i = 0; i < eligible.length; i += 1) {
+    const { orderId, order, due } = eligible[i];
+    const isLast = i === eligible.length - 1;
+    try {
+      let amountTendered;
+      if (method === 'cash') {
+        amountTendered = isLast ? cashRemaining : due;
+        if (amountTendered < due - 0.001) {
+          const err = new Error('Montant reçu insuffisant (espèces).');
+          err.status = 400;
+          throw err;
+        }
+        if (!isLast) {
+          cashRemaining = Math.round((cashRemaining - due) * 100) / 100;
+        }
+      }
+
+      const result = await processCheckout(establishmentId, orderId, user, {
+        customer_id: body.customer_id,
+        payments: [{
+          method,
+          amount: due,
+          amount_tendered: method === 'cash' ? amountTendered : undefined,
+        }],
+      });
+
+      succeeded.push({
+        order_id: result.order._id,
+        order_number: result.order.order_number,
+        payment_id: result.payments[result.payments.length - 1]._id,
+        amount: due,
+        fully_paid: result.fully_paid,
+        table: result.order.table,
+        room: result.order.room,
+      });
+    } catch (err) {
+      failed.push({
+        order_id: orderId,
+        order_number: order?.order_number,
+        message: err.message || 'Erreur encaissement',
+      });
+    }
+  }
+
+  return {
+    succeeded,
+    failed,
+    total_paid: Math.round(succeeded.reduce((sum, row) => sum + row.amount, 0) * 100) / 100,
+    total_due: totalDue,
+    method,
+  };
+}
+
 async function voidPayment(establishmentId, paymentId, user, reason) {
   const payment = await Payment.findOne({
     _id: paymentId,
@@ -692,6 +821,7 @@ module.exports = {
   ORDER_TYPES,
   listReadyToPay,
   processCheckout,
+  processBatchCheckout,
   voidPayment,
   listPaymentHistory,
   getDailySummary,
