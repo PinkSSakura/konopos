@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getProjectRoot } = require('./projectRoot');
-const { findExistingDatabase, legacyKonoPosDataDir } = require('../../api/src/db/database-path');
+const { resolvePackagedSqlitePath } = require('./databasePath');
 
 function isPackaged() {
   try {
@@ -59,9 +59,8 @@ function ensureDataDir() {
   return dataDir;
 }
 
-function resolvePackagedSqlitePath(dataDir) {
-  const existing = findExistingDatabase([dataDir, legacyKonoPosDataDir()]);
-  return existing || path.join(dataDir, 'konopos.sqlite3');
+function resolvePackagedSqlitePathForDataDir(dataDir) {
+  return resolvePackagedSqlitePath(dataDir);
 }
 
 function getBackendEnv() {
@@ -77,7 +76,7 @@ function getBackendEnv() {
     ...desktopEnv,
     TouDev_ENV_FILE: ensureApiEnv(),
     TouDev_DATA_DIR: dataDir,
-    SQLITE_PATH: resolvePackagedSqlitePath(dataDir),
+    SQLITE_PATH: resolvePackagedSqlitePathForDataDir(dataDir),
   };
 }
 

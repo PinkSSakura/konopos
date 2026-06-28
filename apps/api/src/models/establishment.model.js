@@ -42,6 +42,9 @@ module.exports = defineModel('Establishment', {
     is_setup_complete: false,
     daily_order_counter: 0,
     daily_order_session: 1,
+    shift_cash_optional: false,
+    caisse_close_when_all_shifts_closed: false,
+    daily_code_calendar_date: null,
     ...auditDefaults,
   },
 });

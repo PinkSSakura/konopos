@@ -149,13 +149,34 @@ function countPaidUnpaidItems(itemsSent, orderById) {
   };
 }
 
-async function getWaiterDailyCloseReport(establishmentId, user, dateInput) {
+async function getWaiterDailyCloseReport(establishmentId, user, dateInput, shiftDoc) {
   const userId = user._id;
-  const { from, to } = getPeriodRange('day', dateInput);
+  let from;
+  let to;
+  let useShiftScope = false;
+
+  if (shiftDoc) {
+    from = new Date(shiftDoc.clock_in);
+    to = shiftDoc.clock_out ? new Date(shiftDoc.clock_out) : new Date();
+    useShiftScope = true;
+  } else {
+    ({ from, to } = getPeriodRange('day', dateInput));
+  }
+
+  const waiterFilter = waiterOrderFilter(userId);
+  const sentTimeFilter = useShiftScope
+    ? {
+      $or: [
+        { shift: shiftDoc._id },
+        { shift: { $in: [null, undefined] }, sent_to_kitchen_at: { $gte: from, $lte: to } },
+      ],
+    }
+    : { sent_to_kitchen_at: { $gte: from, $lte: to } };
+
   const base = {
     establishment: establishmentId,
     is_deleted: false,
-    ...waiterOrderFilter(userId),
+    ...waiterFilter,
   };
 
   const establishment = await Establishment.findById(establishmentId).select('currency name');
@@ -173,7 +194,7 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput) {
   ] = await Promise.all([
     Order.countDocuments({
       ...base,
-      sent_to_kitchen_at: { $gte: from, $lte: to },
+      ...sentTimeFilter,
     }),
     Order.countDocuments({
       ...base,
@@ -182,18 +203,18 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput) {
     }),
     Order.countDocuments({
       ...base,
-      sent_to_kitchen_at: { $gte: from, $lte: to },
+      ...sentTimeFilter,
       status: { $nin: ['cancelled'] },
       payment_status: { $in: ['unpaid', 'partial'] },
     }),
     Order.countDocuments({
       ...base,
-      sent_to_kitchen_at: { $gte: from, $lte: to },
+      ...sentTimeFilter,
       payment_status: 'paid',
     }),
     Order.find({
       ...base,
-      sent_to_kitchen_at: { $gte: from, $lte: to },
+      ...sentTimeFilter,
       status: { $nin: ['cancelled'] },
     }).select('_id total payment_status status'),
     Order.find({
@@ -202,11 +223,15 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput) {
       updatedAt: { $gte: from, $lte: to },
     }).select('total'),
     Order.find(base).select('_id payment_status status'),
-    Shift.find({
-      establishment: establishmentId,
-      user: userId,
-      clock_in: { $gte: from, $lte: to },
-    })
+    Shift.find(
+      shiftDoc
+        ? { _id: shiftDoc._id }
+        : {
+          establishment: establishmentId,
+          user: userId,
+          clock_in: { $gte: from, $lte: to },
+        },
+    )
       .sort({ clock_in: 1 })
       .select('clock_in clock_out opening_amount closing_amount source is_active'),
   ]);
@@ -290,13 +315,16 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput) {
       fullname: user.fullname,
     },
     shifts: shifts.map((shift) => ({
+      _id: shift._id,
       clock_in: shift.clock_in,
       clock_out: shift.clock_out,
       opening_amount: round2(shift.opening_amount),
       closing_amount: round2(shift.closing_amount),
       source: shift.source,
       is_active: Boolean(shift.is_active),
+      shift_label: shift.shift_label,
     })),
+    shift_id: shiftDoc?._id || null,
     orders: {
       sent: ordersSent,
       canceled: ordersCanceled,
@@ -327,6 +355,9 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput) {
 
 module.exports = {
   getWaiterDailyCloseReport,
+  getWaiterDailyCloseReportForShift: (estId, user, shift) => (
+    getWaiterDailyCloseReport(estId, user, null, shift)
+  ),
   aggregateByName,
   aggregateByNameWithAmount,
   aggregateDetailByName,

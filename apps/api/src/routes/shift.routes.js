@@ -6,6 +6,9 @@ const { shift } = require('../controllers')();
 const router = Router();
 router.use(authenticate);
 
+router.get('/open', requirePermission('shift_manage'), shift.listOpenShifts);
+router.post('/start-for-user', requirePermission('shift_manage'), shift.startShiftForUserHandler);
+router.post('/close-for-user', shift.closeShiftForUserHandler);
 router.get('/current', requirePermission('shift_view_own'), shift.getCurrentShift);
 router.post('/start', requirePermission('shift_view_own'), shift.startShift);
 router.post('/close', requirePermission('shift_view_own'), shift.closeShift);

@@ -849,6 +849,15 @@ async function logoutSession({ token, reason, req, user }) {
       audience: 'system',
     });
   }
+
+  const { isManagerRole, countOpenShifts } = require('./shift-close');
+  const { resetDailyCodeSession } = require('./dailycode');
+  if (isManagerRole(roleKey)) {
+    const estId = user?.establishment?._id || user?.establishment;
+    if (estId && (await countOpenShifts(estId)) === 0) {
+      await resetDailyCodeSession(estId);
+    }
+  }
 }
 
 async function findActiveSystemposShellSession(establishmentId) {

@@ -655,6 +655,17 @@ async function closeDay(establishmentId, user, dateStr, notes) {
     throw err;
   }
 
+  const est = await Establishment.findById(establishmentId).select('caisse_close_when_all_shifts_closed');
+  if (est?.caisse_close_when_all_shifts_closed) {
+    const { countOpenShifts } = require('./shift-close');
+    const open = await countOpenShifts(establishmentId);
+    if (open > 0) {
+      const err = new Error('Clôture caisse impossible : des shifts serveurs sont encore ouverts.');
+      err.status = 400;
+      throw err;
+    }
+  }
+
   const closing = await DailyClosing.create({
     establishment: establishmentId,
     closing_date: summary.date,

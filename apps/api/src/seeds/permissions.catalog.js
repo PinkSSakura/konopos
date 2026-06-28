@@ -266,9 +266,14 @@ function buildPermissionCatalog() {
     ['plan_create', 'shift_plan_create', 'Créer planning'],
     ['plan_update', 'shift_plan_update', 'Modifier planning'],
     ['plan_delete', 'shift_plan_delete', 'Supprimer planning'],
+    ['manage', 'shift_manage', 'Gérer shifts serveurs (ouvrir / clôturer)'],
+    ['configure', 'shift_configure', 'Configurer shifts établissement'],
   ];
   for (const [action, slug, name] of shiftActions) {
-    add({ prefix: 'SHF', slug, name, module: 'shifts', resource: 'shift', action, applicable_role_types: BO_FO, suggested_default_roles: ['superadmin', 'owner', 'manager', 'submanager', 'waiter', 'cook', 'barman'] });
+    const defaults = ['manage', 'configure'].includes(action)
+      ? ['superadmin', 'owner', 'manager', 'submanager']
+      : ['superadmin', 'owner', 'manager', 'submanager', 'waiter', 'cook', 'barman'];
+    add({ prefix: 'SHF', slug, name, module: 'shifts', resource: 'shift', action, applicable_role_types: BO_FO, suggested_default_roles: defaults });
   }
 
   // Floor

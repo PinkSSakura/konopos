@@ -86,6 +86,9 @@ const MODEL_SCHEMAS = {
     is_setup_complete: bool(),
     daily_order_counter: real(),
     daily_order_session: real(),
+    shift_cash_optional: bool(),
+    caisse_close_when_all_shifts_closed: bool(),
+    daily_code_calendar_date: text(),
     ...audited,
   }, [
     'CREATE UNIQUE INDEX IF NOT EXISTS idx_establishments_code ON establishments (code_establishment) WHERE code_establishment IS NOT NULL',
@@ -199,7 +202,9 @@ const MODEL_SCHEMAS = {
   Shift: model('shifts', {
     user: ref(),
     establishment: ref(),
+    opened_by: ref(),
     closed_by_user: ref(),
+    shift_label: text(),
     source_systempos_session: ref(),
     forced_logout_by: ref(),
     role_key: text(),
@@ -323,6 +328,7 @@ const MODEL_SCHEMAS = {
     table: ref(),
     room: ref(),
     waiter: ref(),
+    shift: ref(),
     customer: ref(),
     merged_into: ref(),
     order_number: text(),
@@ -351,6 +357,7 @@ const MODEL_SCHEMAS = {
     'CREATE INDEX IF NOT EXISTS idx_orders_establishment_status ON orders (establishment, is_deleted, status)',
     'CREATE INDEX IF NOT EXISTS idx_orders_created ON orders (establishment, createdAt)',
     'CREATE INDEX IF NOT EXISTS idx_orders_daily_code ON orders (establishment, daily_code_session, daily_code)',
+    'CREATE INDEX IF NOT EXISTS idx_orders_shift ON orders (shift, is_deleted)',
   ]),
 
   OrderItem: model('order_items', {

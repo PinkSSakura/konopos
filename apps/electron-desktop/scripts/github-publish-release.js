@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { request } = require('undici');
 const { loadPublishEnv } = require('./load-publish-env');
 
 loadPublishEnv();
@@ -92,6 +93,7 @@ async function uploadAsset(releaseId, filePath, name) {
       },
       body: fs.readFileSync(filePath),
       duplex: 'half',
+      signal: AbortSignal.timeout(600000),
     },
   );
   if (!res.ok) {

@@ -35,6 +35,27 @@ async function getEstablishmentSession(estId) {
   return est;
 }
 
+function todayDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+async function maybeResetDailyCodeForCalendarDay(establishmentId) {
+  const est = await getEstablishmentSession(establishmentId);
+  const today = todayDateKey();
+  if (est.daily_code_calendar_date === today) return false;
+  await Establishment.updateOne(
+    { _id: establishmentId },
+    {
+      $set: {
+        daily_order_counter: 0,
+        daily_code_calendar_date: today,
+      },
+    },
+  );
+  return true;
+}
+
 /**
  * Assign a daily code on first send to kitchen/bar. Re-sends keep the existing code.
  */
@@ -42,6 +63,8 @@ async function assignDailyCodeIfNeeded(order, establishment) {
   const est = establishment?.daily_order_session != null
     ? establishment
     : await getEstablishmentSession(order.establishment);
+
+  await maybeResetDailyCodeForCalendarDay(est._id || order.establishment);
 
   if (
     order.daily_code
@@ -171,6 +194,7 @@ module.exports = {
   formatDailyCode,
   assignDailyCodeIfNeeded,
   resetDailyCodeSession,
+  maybeResetDailyCodeForCalendarDay,
   findOrderByDailyCode,
   printDailyCodeSlip,
   buildDailyCodeSlipPayload,

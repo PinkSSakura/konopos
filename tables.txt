@@ -130,3 +130,81 @@ they both launched orders but each time one of them relogin to launch another or
 ask before proceeding
 ---------------------
 in Clôture journalière page I want this pdf export with all the details too and fix the date table here by using shadcn UI date table
+
+
+-------------------------------------
+1- 
+- waiter can start their own shift and finish their own shift when all orders are paid or cancelled orders
+- manager / superadmin / owner / submanager can start selected waiters shifts and closes them with same condition
+- only superadmin can close shifts even without the conditions
+- when superadmin / manager / owner / submanager click on cloture du jour it automatically closes the shift for the selected waiter
+
+2- 
+no it starts on the selected time from the machine [ if for example 16:45 -> it starts on 16:45 ]
+
+3-
+the shift is customizable per [ manager / superadmin / owner / submanager ] - they login -> they start the waiters shifts and close everyone's/each waiter's shift
+so it is not fixed shifts like 10 -> 14 or 18 -> 00 etc ... no that's not it
+
+4- 
+when all shifts are closed then caisse cloture is available too
+daily codes are actually reset per shifts
+
+5-
+yes each ; that's also can be an option added
+
+6- 
+yes ; cannot cloture at all [ strict ]
+
+7-
+B is a good option
+
+8- 
+keep everything the same for the day 
+
+9- Name , Start time - end time OR when manager logs in they select which waiters to start shift and before loggin out they select the waiter to close their shift for cloture to be good even if past midnight
+
+10- 
+fix everything is 3.4.2
+
+[ Manager Login / Shift Overview
+Manager opens the app → Sees list of active/open shifts (or waiters currently working).
+Manager can start a new shift for a waiter who arrives (select waiter → set start time, optionally planned end time).
+
+During the Day
+All orders placed by a waiter are automatically linked to their current open shift.
+The system always knows “which shift is responsible for this order”.
+
+Closing Shifts (Clôture)
+Manager goes to “Close Shifts” section.
+Sees list of currently open shifts (sorted by waiter).
+Manager closes them one by one:
+Select a shift → Review summary (orders, total, cash, tips, etc.).
+Option to add manual adjustments (voids, discounts, cash tip declaration…).
+Confirm close → System records end_datetime and finalizes the numbers.
+
+How to Handle Midnight-Crossing Shifts
+This workflow solves your original problem naturally:
+
+A waiter who started yesterday at 19:00 still has an open shift today at 01:00.
+When the manager closes that shift at 03:30, the system pulls all orders from 19:00 yesterday until 03:30 today and attributes them to that single shift.
+The next shift for that waiter (or another) starts fresh.
+
+Key rule: An order always belongs to the active shift of the waiter at the moment the order was created.
+
+Technical Implementation Tips
+Shift Table (minimal):
+
+id
+waiter_id
+manager_id (who opened/closed it)
+start_datetime
+end_datetime (null while open)
+status (open, closed)
+final_sales, final_cash, etc. (calculated on close)
+
+Order Table:
+
+shift_id (filled when order is created)
+
+so with that the code du jour is reseted when all shifts closed and [ manager / submanager / owner / superadmin ] logs out ]

@@ -318,6 +318,13 @@ async function createOrder(req, res, next) {
       created_by: req.user._id,
     });
 
+    const { findActiveShift } = require('../services/shift');
+    const activeShift = await findActiveShift(req.user._id, estId);
+    if (activeShift) {
+      order.shift = activeShift._id;
+      await order.save();
+    }
+
     if (req.body.table) {
       const table = await Table.findOne({ _id: req.body.table, establishment: estId, is_deleted: false });
       if (!table) {

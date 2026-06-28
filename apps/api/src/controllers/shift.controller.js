@@ -4,7 +4,15 @@ const { getEstablishmentId } = query;
 const { mapList, serializeShiftCurrent, serializeShiftHistory } = serializers;
 const { canExportStaffReport } = staffexport;
 const { shift, audit, print, reports } = require('../services')();
-const { getWaiterDailyCloseReport } = require('../services/waiter-daily-close');
+const { getWaiterDailyCloseReport, getWaiterDailyCloseReportForShift } = require('../services/waiter-daily-close');
+const {
+  findOpenShifts,
+  validateShiftClose,
+  closeShiftRecord,
+  startShiftForUser,
+  isManagerRole,
+} = require('../services/shift-close');
+const { hasPermission } = require('../services/permission');
 const { buildWaiterDailyClosePdf } = reports;
 const {
   isShiftRole,
@@ -107,6 +115,7 @@ async function startShift(req, res, next) {
     const shift = await Shift.create({
       user: req.user._id,
       establishment: estId,
+      opened_by: req.user._id,
       opening_amount: requiresShiftAmounts(roleKey) ? openingAmount : 0,
       source: req.session?.is_pin_session ? 'systempos' : 'manual',
       source_systempos_session: req.session?.parent_systempos_session || null,
@@ -152,17 +161,23 @@ async function closeShift(req, res, next) {
       return res.status(404).json({ success: false, message: 'Aucun shift actif.' });
     }
 
+    const establishment = await Establishment.findById(estId).select('shift_cash_optional name');
     const closingAmount = Number(req.body?.closing_amount || 0);
-    if (requiresShiftAmounts(roleKey) && (Number.isNaN(closingAmount) || closingAmount < 0)) {
-      return res.status(400).json({ success: false, message: 'Montant de clôture invalide.' });
-    }
+    const { needsAmounts } = await validateShiftClose({
+      shift,
+      user: req.user,
+      establishment,
+      closingAmount,
+      force: false,
+    });
 
-    shift.is_active = false;
-    shift.clock_out = new Date();
-    shift.closed_by_user = req.user._id;
-    shift.notes = req.body?.notes || shift.notes;
-    if (requiresShiftAmounts(roleKey)) shift.closing_amount = closingAmount;
-    await shift.save();
+    await closeShiftRecord({
+      shift,
+      closedByUser: req.user,
+      closingAmount,
+      notes: req.body?.notes,
+      needsAmounts,
+    });
 
     await logStaffActivity({
       establishment: estId,
@@ -176,9 +191,10 @@ async function closeShift(req, res, next) {
     });
 
     let printResult = null;
+    let report = null;
     if (roleKey === 'waiter') {
       try {
-        const report = await getWaiterDailyCloseReport(estId, req.user);
+        report = await getWaiterDailyCloseReportForShift(estId, req.user, shift);
         printResult = await print.printWaiterDailyClose(estId, report);
       } catch (printErr) {
         printResult = { skipped: true, reason: printErr.message || 'Erreur impression' };
@@ -188,12 +204,143 @@ async function closeShift(req, res, next) {
     return res.json({
       success: true,
       data: serializeShiftHistory(shift),
+      report,
       message: 'Shift clôturé.',
-      meta: {
-        daily_close_print: printResult,
-      },
+      meta: { daily_close_print: printResult },
     });
   } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({
+        success: false,
+        message: err.message,
+        code: err.code,
+        data: err.data,
+      });
+    }
+    next(err);
+  }
+}
+
+async function listOpenShifts(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const shifts = await findOpenShifts(estId);
+    const data = await Promise.all(shifts.map(async (s) => {
+      const user = await User.findById(s.user).select('fullname');
+      return {
+        ...serializeShiftCurrent(s),
+        waiter: user ? { _id: user._id, fullname: user.fullname } : null,
+      };
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function startShiftForUserHandler(req, res, next) {
+  try {
+    if (!hasPermission(req.user, 'shift_manage')) {
+      return res.status(403).json({ success: false, message: 'Permission shift_manage requise.' });
+    }
+    const estId = getEstablishmentId(req);
+    const targetId = req.body?.user_id;
+    if (!targetId) {
+      return res.status(400).json({ success: false, message: 'user_id requis.' });
+    }
+    const target = await User.findOne({ _id: targetId, establishment: estId, is_deleted: false }).populate('role');
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'Serveur introuvable.' });
+    }
+    const roleKey = target.role?.role_key;
+    if (roleKey !== 'waiter') {
+      return res.status(400).json({ success: false, message: 'Seuls les serveurs ont des shifts de service.' });
+    }
+    const shift = await startShiftForUser({
+      targetUser: target,
+      establishmentId: estId,
+      openedBy: req.user,
+      openingAmount: req.body?.opening_amount,
+      shiftLabel: req.body?.shift_label,
+      roleKey: 'waiter',
+      source: 'manual',
+    });
+    res.status(201).json({ success: true, data: serializeShiftCurrent(shift), message: 'Shift ouvert.' });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ success: false, message: err.message });
+    next(err);
+  }
+}
+
+async function closeShiftForUserHandler(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const targetId = req.body?.user_id || req.user._id;
+    const isSelf = String(targetId) === String(req.user._id);
+
+    if (!isSelf && !hasPermission(req.user, 'shift_manage')) {
+      return res.status(403).json({ success: false, message: 'Permission shift_manage requise.' });
+    }
+    if (isSelf && !isShiftRole(req.user?.role?.role_key)) {
+      return res.status(400).json({ success: false, message: 'Ce rôle n\'utilise pas les shifts.' });
+    }
+
+    const target = isSelf
+      ? req.user
+      : await User.findOne({ _id: targetId, establishment: estId, is_deleted: false });
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
+    }
+
+    const shift = await findActiveShift(target._id, estId);
+    if (!shift) {
+      return res.status(404).json({ success: false, message: 'Aucun shift actif.' });
+    }
+
+    const establishment = await Establishment.findById(estId).select('shift_cash_optional name');
+    const closingAmount = Number(req.body?.closing_amount || 0);
+    const force = Boolean(req.body?.force);
+    const { needsAmounts } = await validateShiftClose({
+      shift,
+      user: req.user,
+      establishment,
+      closingAmount,
+      force,
+      reassignToShiftId: req.body?.reassign_to_shift_id,
+    });
+
+    await closeShiftRecord({
+      shift,
+      closedByUser: req.user,
+      closingAmount,
+      notes: req.body?.notes,
+      needsAmounts,
+    });
+
+    const report = await getWaiterDailyCloseReportForShift(estId, target, shift);
+    let printResult = null;
+    try {
+      printResult = await print.printWaiterDailyClose(estId, report);
+    } catch (printErr) {
+      printResult = { skipped: true, reason: printErr.message || 'Erreur impression' };
+    }
+
+    res.json({
+      success: true,
+      data: serializeShiftHistory(shift),
+      report,
+      message: 'Clôture du jour — shift clôturé.',
+      meta: { daily_close_print: printResult },
+    });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({
+        success: false,
+        message: err.message,
+        code: err.code,
+        data: err.data,
+      });
+    }
     next(err);
   }
 }
@@ -309,11 +456,17 @@ async function getWaiterDailyClose(req, res, next) {
       });
     }
 
-    const data = await getWaiterDailyCloseReport(
-      estId,
-      resolved.user,
-      req.query?.date,
-    );
+    const shiftId = req.query?.shift_id;
+    let shiftDoc = null;
+    if (shiftId) {
+      shiftDoc = await Shift.findOne({ _id: shiftId, establishment: estId });
+    } else {
+      shiftDoc = await findActiveShift(resolved.user._id, estId);
+    }
+
+    const data = shiftDoc
+      ? await getWaiterDailyCloseReportForShift(estId, resolved.user, shiftDoc)
+      : await getWaiterDailyCloseReport(estId, resolved.user, req.query?.date);
     res.json({ success: true, data });
   } catch (err) {
     if (err.status) {
@@ -393,6 +546,9 @@ async function printMyWaiterDailyClose(req, res, next) {
 }
 
 module.exports = {
+  closeShiftForUserHandler,
+  listOpenShifts,
+  startShiftForUserHandler,
   getCurrentShift,
   startShift,
   closeShift,
