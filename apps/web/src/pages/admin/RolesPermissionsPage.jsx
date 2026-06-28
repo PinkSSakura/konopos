@@ -46,7 +46,7 @@ function PermissionCard({ cell, checked, isSuperadmin, onToggle }) {
     <label
       className={cn(
         'flex cursor-pointer items-start gap-3 rounded-lg border border-border/60 bg-background p-3 transition-colors hover:bg-muted/30',
-        isGranted && 'border-[var(--brand-gold)]/50 bg-[var(--brand-gold)]/5'
+        isGranted && 'border-[var(--brand-primary)]/50 bg-[var(--brand-primary)]/5'
       )}
     >
       <Checkbox

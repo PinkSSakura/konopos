@@ -6,7 +6,7 @@ const path = require('path');
 
 if (app.isPackaged) {
 
-  app.setName('KonoPOS');
+  app.setName('TouDev');
 
 }
 
@@ -63,7 +63,7 @@ function createWindow() {
 
     },
 
-    title: 'KonoPOS',
+    title: 'TouDev',
 
     icon: APP_ICON,
 
@@ -460,7 +460,7 @@ ipcMain.handle('open-pos', async () => {
     height: 800,
     show: false,
     closable: false,
-    title: 'KonoPOS',
+    title: 'TouDev',
     icon: APP_ICON,
     autoHideMenuBar: true,
     webPreferences: {
@@ -558,7 +558,7 @@ ipcMain.handle('open-cds', async () => {
 
     show: false,
 
-    title: 'KonoPOS — Écran client',
+    title: 'TouDev — Écran client',
 
     icon: APP_ICON,
 

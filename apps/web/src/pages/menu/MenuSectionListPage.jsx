@@ -56,6 +56,73 @@ export default function MenuSectionListPage() {
     render: (row) => <TableActions items={items(row)} />,
   });
 
+  const getRowActions = useCallback((row) => {
+    if (!sectionMeta) return [];
+
+    if (sectionMeta.key === 'categories') {
+      return [
+        {
+          key: 'edit',
+          label: 'Modifier',
+          link: `/menu/categories/${row._id}/edit`,
+        },
+        {
+          key: 'delete',
+          label: 'Supprimer',
+          danger: true,
+          confirm: 'Supprimer cette catégorie ?',
+          onClick: () => client.delete(`/menu/categories/${row._id}`).then(load),
+        },
+      ];
+    }
+
+    if (sectionMeta.key === 'subcategories') {
+      return [
+        {
+          key: 'edit',
+          label: 'Modifier',
+          link: `/menu/subcategories/${row._id}/edit`,
+        },
+      ];
+    }
+
+    if (sectionMeta.key === 'items') {
+      return [
+        {
+          key: 'edit',
+          label: 'Modifier',
+          link: `/menu/items/${row._id}/edit`,
+        },
+        {
+          key: 'delete',
+          label: 'Supprimer',
+          danger: true,
+          confirm: 'Supprimer cet article ?',
+          onClick: () => client.delete(`/menu/items/${row._id}`).then(load),
+        },
+      ];
+    }
+
+    if (sectionMeta.key === 'extras') {
+      return [
+        {
+          key: 'edit',
+          label: 'Modifier',
+          link: `/menu/extras/${row._id}/edit`,
+        },
+        {
+          key: 'delete',
+          label: 'Supprimer',
+          danger: true,
+          confirm: 'Supprimer cet extra ?',
+          onClick: () => client.delete(`/menu/extras/${row._id}`).then(load),
+        },
+      ];
+    }
+
+    return [];
+  }, [sectionMeta, load]);
+
   const columns = useMemo(() => {
     if (!sectionMeta) return [];
 
@@ -68,7 +135,7 @@ export default function MenuSectionListPage() {
           render: (r) => (r.image_url ? (
             <img src={r.image_url} alt="" className="size-10 rounded-lg object-cover" />
           ) : (
-            <div className="size-10 rounded-lg" style={{ background: r.color || '#ceb38f' }} />
+            <div className="size-10 rounded-lg" style={{ background: r.color || '#c2462d' }} />
           )),
         },
         actionsCell((r) => [
@@ -205,8 +272,8 @@ export default function MenuSectionListPage() {
       title={sectionMeta.title}
       subtitle={sectionMeta.description}
       action={(
-        <PagePrimaryButton to={sectionMeta.addPath} icon={Plus}>
-          {sectionMeta.addLabel}
+        <PagePrimaryButton to={sectionMeta.addPath} icon={Plus} size="sm" className="w-auto">
+          Créer
         </PagePrimaryButton>
       )}
     >
@@ -215,10 +282,10 @@ export default function MenuSectionListPage() {
       ) : (
         <MenuSectionPanel
           section={sectionMeta.key}
-          label={sectionMeta.title}
           columns={columns}
           rows={rows}
           categories={categories}
+          getRowActions={getRowActions}
         />
       )}
     </PageShell>

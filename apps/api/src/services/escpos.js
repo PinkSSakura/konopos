@@ -207,7 +207,7 @@ function buildCaisseTicketBuffer(lines) {
 
 function buildDailyCodeSlipBuffer(lines) {
   const parts = [init(), align('center'), bold(true)];
-  parts.push(textLine(lines.title || 'KonoPOS'));
+  parts.push(textLine(lines.title || 'TouDev'));
   parts.push(size(false), bold(false));
   parts.push(lineFeed(0.5));
   parts.push(bold(true), textLine(lines.subtitle || 'CODE DU JOUR'));
@@ -242,7 +242,7 @@ function buildWaiterDailyCloseBuffer(report, establishmentName) {
   const parts = [init(), align('center'), bold(true), size(true)];
   parts.push(textLine('CLOTURE DU JOUR'));
   parts.push(size(false), bold(false));
-  parts.push(textLine(establishmentName || 'KonoPOS'));
+  parts.push(textLine(establishmentName || 'TouDev'));
   parts.push(lineFeed());
 
   parts.push(align('left'));

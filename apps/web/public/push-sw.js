@@ -6,12 +6,12 @@ self.addEventListener('push', (event) => {
     data = {};
   }
 
-  const title = data.title || 'KonoPOS';
+  const title = data.title || 'TouDev';
   const options = {
     body: data.body || 'Article prêt à servir',
     icon: data.icon || '/pwa-192x192.png',
     badge: data.badge || '/pwa-192x192.png',
-    tag: data.tag || 'konopos-item-ready',
+    tag: data.tag || 'TouDev-item-ready',
     renotify: true,
     silent: false,
     vibrate: [180, 80, 180],

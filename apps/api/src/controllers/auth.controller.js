@@ -237,7 +237,7 @@ async function logout(req, res, next) {
 async function logoutPin(req, res, next) {
   try {
     const establishmentId = req.user?.establishment?._id || req.user?.establishment;
-    const isTerminal = req.headers['x-konopos-terminal'] === 'systempos';
+    const isTerminal = req.headers['x-TouDev-terminal'] === 'systempos';
 
     if (!req.session?.is_pin_session) {
       if (req.user?.role?.role_key === 'systempos') {
@@ -484,7 +484,7 @@ async function pollLoginChallenge(req, res, next) {
 
 async function restoreSystemposShell(req, res, next) {
   try {
-    if (req.headers['x-konopos-terminal'] !== 'systempos') {
+    if (req.headers['x-TouDev-terminal'] !== 'systempos') {
       return res.status(403).json({
         success: false,
         message: 'Terminal SystemPOS requis.',

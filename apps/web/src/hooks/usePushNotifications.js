@@ -17,7 +17,7 @@ function urlBase64ToUint8Array(base64String) {
 
 function canRegisterPush(user) {
   if (!user?._id) return false;
-  if (window.konoPosShell) return false;
+  if (window.TouDevShell) return false;
   if (SKIP_ROLES.has(user.role?.role_key)) return false;
   if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
     return false;

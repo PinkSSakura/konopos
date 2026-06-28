@@ -4,7 +4,7 @@ const { loadPublishEnv } = require('./load-publish-env');
 
 loadPublishEnv();
 
-const token = process.env.KONOPOS_GH_UPDATE_TOKEN || process.env.GH_TOKEN || '';
+const token = process.env.TouDev_GH_UPDATE_TOKEN || process.env.GH_TOKEN || '';
 const outPath = path.join(__dirname, '..', 'lib', 'updateToken.built.js');
 
 const contents = `// Generated at build time — do not commit (gitignored).
@@ -17,8 +17,8 @@ fs.writeFileSync(outPath, contents, 'utf8');
 
 if (!token) {
   console.warn(
-    '[konopos] KONOPOS_GH_UPDATE_TOKEN not set — private GitHub updates will not download until you rebuild with a read token.',
+    '[TouDev] TouDev_GH_UPDATE_TOKEN not set — private GitHub updates will not download until you rebuild with a read token.',
   );
 } else {
-  console.log('[konopos] Update token embedded for GitHub releases.');
+  console.log('[TouDev] Update token embedded for GitHub releases.');
 }

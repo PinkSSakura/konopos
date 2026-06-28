@@ -37,7 +37,7 @@ body.touch-kb-dragging * {
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 2px solid #ceb38f;
+  border: 2px solid #c2462d;
   border-radius: 12px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
   overflow: hidden;
@@ -159,7 +159,7 @@ html.touch-mode .touch-kb-key {
 
 .touch-kb-key:active {
   background: #ffe8eb;
-  border-color: #ceb38f;
+  border-color: #c2462d;
 }
 
 .touch-kb-key-space {
@@ -187,17 +187,17 @@ html.touch-mode .touch-kb-key-action {
 }
 
 .touch-kb-key-active {
-  background: #ceb38f;
+  background: #c2462d;
   color: #fff;
-  border-color: #ceb38f;
+  border-color: #c2462d;
 }
 
 .touch-kb-key-enter {
   flex: 1 1 80px;
   max-width: 180px;
-  background: #ceb38f;
+  background: #c2462d;
   color: #fff;
-  border-color: #ceb38f;
+  border-color: #c2462d;
 }
 
 .touch-kb-key-enter:active {
@@ -214,7 +214,7 @@ html.touch-mode .touch-kb-key-action {
   align-items: center;
   justify-content: center;
   cursor: nwse-resize;
-  color: #ceb38f;
+  color: #c2462d;
   font-size: 16px;
   background: linear-gradient(135deg, transparent 50%, #fff0f2 50%);
   border-bottom-right-radius: 10px;

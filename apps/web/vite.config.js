@@ -14,10 +14,10 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'push-sw.js'],
       manifest: {
-        name: 'KonoPOS',
-        short_name: 'KonoPOS',
+        name: 'TouDev',
+        short_name: 'TouDev',
         description: 'POS local pour restaurants et cafés',
-        theme_color: '#34373c',
+        theme_color: '#c2462d',
         background_color: '#f0eeea',
         display: 'standalone',
         orientation: 'any',
@@ -45,6 +45,7 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globIgnores: ['**/toudev_pos_long-*.png'],
         importScripts: ['push-sw.js'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/, /^\/socket\.io/],

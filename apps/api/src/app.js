@@ -15,7 +15,7 @@ app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(cors(createCorsOptions()));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-const uploadsDir = path.join(process.env.KONOPOS_DATA_DIR || path.join(__dirname, '..'), 'uploads');
+const uploadsDir = path.join(process.env.TouDev_DATA_DIR || path.join(__dirname, '..'), 'uploads');
 app.use('/api/uploads', express.static(uploadsDir));
 
 app.use('/api', sanitizeResponse);

@@ -575,11 +575,11 @@ export default function FloorPlanPage() {
                         height: t.position?.height ?? 60,
                         background: STATUS_BG[t.status] || '#f6ffed',
                         border: isSelected
-                          ? '3px solid var(--brand-gold, #ceb38f)'
+                          ? '3px solid var(--brand-primary, #c2462d)'
                           : isMerged
                             ? '2px dashed #6366f1'
                             : drawerTable?._id === t._id
-                              ? '2px solid #ceb38f'
+                              ? '2px solid #c2462d'
                               : '2px solid #333',
                         borderRadius: 4,
                         cursor: 'pointer',
@@ -813,7 +813,7 @@ export default function FloorPlanPage() {
               key={order._id}
               className={cn(
                 'flex cursor-pointer items-center justify-between rounded-lg border p-3',
-                mergeTargetOrderId === order._id && 'border-[var(--brand-gold)] bg-muted/40',
+                mergeTargetOrderId === order._id && 'border-[var(--brand-primary)] bg-muted/40',
               )}
             >
               <span className="flex items-center gap-2">

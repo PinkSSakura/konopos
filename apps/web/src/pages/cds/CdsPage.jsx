@@ -87,7 +87,7 @@ function LockedScreen({ info }) {
         {info?.logo && (
           <img src={info.logo} alt="" className="cds-page__logo" />
         )}
-        <h1 className="cds-page__title">{info?.name || 'KonoPOS'}</h1>
+        <h1 className="cds-page__title">{info?.name || 'TouDev'}</h1>
       </header>
       <div className="cds-page__locked-body">
         <p className="cds-page__locked-title">Écran client en attente</p>
@@ -179,7 +179,7 @@ export default function CdsPage() {
         {info?.logo && (
           <img src={info.logo} alt="" className="cds-page__logo" />
         )}
-        <h1 className="cds-page__title">{info?.name || 'KonoPOS'}</h1>
+        <h1 className="cds-page__title">{info?.name || 'TouDev'}</h1>
       </header>
 
       {loadError && (

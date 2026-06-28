@@ -9,14 +9,14 @@ const { loadPublishEnv } = require('./load-publish-env');
 
 loadPublishEnv();
 
-const owner = process.env.KONOPOS_GH_OWNER || 'PinkSSakura';
-const repo = process.env.KONOPOS_GH_REPO || 'konopos';
+const owner = process.env.TouDev_GH_OWNER || 'PinkSSakura';
+const repo = process.env.TouDev_GH_REPO || 'TouDev';
 const token = process.env.GH_TOKEN;
 const version = process.argv.find((a) => /^\d+\.\d+\.\d+$/.test(a)) || require('../package.json').version;
 const forceReplace = process.argv.includes('--force');
 const tag = `v${version}`;
 const releaseBuild = path.join(__dirname, '..', '..', '..', 'release-build');
-const exeName = `KonoPOS-Setup-${version}.exe`;
+const exeName = `TouDev-Setup-${version}.exe`;
 
 if (!token) {
   console.error('GH_TOKEN missing — set in apps/electron-desktop/.env.publish.local');
@@ -129,8 +129,8 @@ async function main() {
     if (e.status !== 404) throw e;
     release = await api('POST', `/repos/${owner}/${repo}/releases`, {
       tag_name: tag,
-      name: `KonoPOS ${version}`,
-      body: `KonoPOS ${version} — silent in-app upgrade install.`,
+      name: `TouDev ${version}`,
+      body: `TouDev ${version} — silent in-app upgrade install.`,
       draft: false,
       prerelease: false,
     });

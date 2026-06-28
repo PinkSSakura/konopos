@@ -33,7 +33,7 @@ async function createCategory(req, res, next) {
       establishment: estId,
       name: req.body.name,
       image_url: req.body.image_url || undefined,
-      color: req.body.color || '#fc2c46',
+      color: req.body.color || '#c2462d',
       extra_ids: Array.isArray(req.body.extra_ids) ? req.body.extra_ids : [],
       created_by: req.user._id,
     });
@@ -61,7 +61,7 @@ async function updateCategory(req, res, next) {
         $set: {
           name: req.body.name,
           image_url: req.body.image_url || null,
-          color: req.body.color || '#fc2c46',
+          color: req.body.color || '#c2462d',
           extra_ids: Array.isArray(req.body.extra_ids) ? req.body.extra_ids : [],
           modified_by: req.user._id,
         },

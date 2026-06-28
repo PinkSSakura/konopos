@@ -1,4 +1,4 @@
-const TERMINAL_FLAG = 'konopos_system_terminal';
+const TERMINAL_FLAG = 'TouDev_system_terminal';
 
 function readFlag(storage) {
   try {
@@ -33,7 +33,7 @@ export function isSystemTerminalContext() {
 export function getTerminalRequestHeaders() {
   const headers = {};
   if (isSystemTerminalContext()) {
-    headers['X-KonoPOS-Terminal'] = 'systempos';
+    headers['X-TouDev-Terminal'] = 'systempos';
   }
   return headers;
 }

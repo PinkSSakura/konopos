@@ -1,12 +1,12 @@
 const config = require('../config');
 
-const COOKIE_NAME = 'konopos_session';
+const COOKIE_NAME = 'TouDev_session';
 
 function cookieBaseOptions() {
   const isProd = config.env === 'production';
   // Local Electron/desktop serves UI over http://127.0.0.1 — Secure cookies are rejected.
-  const localPos = process.env.KONOPOS_LOCAL_POS === 'true'
-    || process.env.KONOPOS_LOCAL_POS === '1';
+  const localPos = process.env.TouDev_LOCAL_POS === 'true'
+    || process.env.TouDev_LOCAL_POS === '1';
   return {
     httpOnly: true,
     secure: isProd && !localPos,

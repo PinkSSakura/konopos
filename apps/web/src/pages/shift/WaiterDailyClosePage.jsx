@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FileDown, Loader2, Printer } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { message } from '@/lib/toast';
 import client from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
@@ -11,15 +11,14 @@ import { todayDateString, formatDateLong } from '../../utils/dateFilters';
 import { downloadPdf } from '../../utils/pdfExport';
 import DatePicker from '../../components/DatePicker';
 import Combobox from '../../components/Combobox';
+import CollapsibleToolbar from '../../components/layout/CollapsibleToolbar';
 import { CardLoading } from '../../components/loading/LoadingStates';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
   Card,
-  CardAction,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -233,50 +232,59 @@ export default function WaiterDailyClosePage() {
   const items = report?.items || {};
   const currency = report?.currency || 'MAD';
 
+  const selectedWaiterLabel =
+    waiterOptions.find((entry) => entry.value === (targetUserId || user?._id))?.label
+    || report?.waiter?.fullname
+    || user?.fullname;
+  const toolbarSummary = [
+    formatDateLong(dateStr),
+    canSelectTarget ? selectedWaiterLabel : null,
+  ].filter(Boolean).join(' · ');
+
   return (
     <Card>
-      <CardHeader className="border-b border-border/60">
-        <div className="space-y-1">
-          <CardTitle className="text-xl font-semibold">Clôture du jour</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Récapitulatif des commandes et articles — export PDF 80 mm ou impression caisse.
-          </p>
-        </div>
-        <CardAction className="flex flex-wrap items-center gap-2">
-          {canSelectTarget && (
-            <Combobox
-              options={waiterOptions}
-              value={targetUserId || user?._id}
-              onValueChange={setTargetUserId}
-              placeholder="Serveur"
-              disabled={loadingWaiters || !waiterOptions.length}
-              className="min-w-[180px]"
-            />
-          )}
-          <DatePicker value={dateStr} onChange={setDateStr} />
-          <Button
-            variant="outline"
-            disabled={loading || exportingPdf || !report}
-            onClick={handleExportPdf}
-          >
-            {exportingPdf ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <FileDown className="size-4" />
-            )}
-            Export PDF
-          </Button>
-          <Button variant="outline" disabled={loading || printing || !report} onClick={handlePrint}>
-            {printing ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Printer className="size-4" />
-            )}
-            Imprimer (caisse)
-          </Button>
-        </CardAction>
-      </CardHeader>
       <CardContent className="space-y-6 pt-4">
+        <CollapsibleToolbar title="Clôture du jour" summary={toolbarSummary}>
+          <div className="daily-close-toolbar-grid">
+            <div
+              className={cn(
+                'daily-close-toolbar-grid__filters',
+                !canSelectTarget && 'daily-close-toolbar-grid__filters--single',
+              )}
+            >
+              {canSelectTarget ? (
+                <Combobox
+                  options={waiterOptions}
+                  value={targetUserId || user?._id}
+                  onValueChange={setTargetUserId}
+                  placeholder="Serveur"
+                  disabled={loadingWaiters || !waiterOptions.length}
+                  className="w-full"
+                />
+              ) : null}
+              <DatePicker value={dateStr} onChange={setDateStr} className="w-full" />
+            </div>
+            <div className="daily-close-toolbar-grid__actions">
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={loading || exportingPdf || !report}
+                onClick={handleExportPdf}
+              >
+                {exportingPdf ? <Loader2 className="size-4 animate-spin" /> : 'PDF'}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={loading || printing || !report}
+                onClick={handlePrint}
+              >
+                {printing ? <Loader2 className="size-4 animate-spin" /> : 'Imprimer Caisse'}
+              </Button>
+            </div>
+          </div>
+        </CollapsibleToolbar>
+
         {loading ? (
           <CardLoading />
         ) : (

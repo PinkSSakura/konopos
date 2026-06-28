@@ -28,8 +28,8 @@ function resolveDatabasePath(filePath) {
 
 function getDatabasePath() {
   if (config.sqlitePath) return resolveDatabasePath(config.sqlitePath);
-  const dataDir = process.env.KONOPOS_DATA_DIR || path.join(__dirname, '..', '..', 'data');
-  return path.join(dataDir, 'konopos.sqlite3');
+  const dataDir = process.env.TouDev_DATA_DIR || path.join(__dirname, '..', '..', 'data');
+  return path.join(dataDir, 'TouDev.sqlite3');
 }
 
 function applyJournalMode(connection) {

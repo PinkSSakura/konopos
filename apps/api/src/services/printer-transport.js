@@ -21,7 +21,7 @@ $bytes = [System.IO.File]::ReadAllBytes($FilePath)
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
-public class KonoposRawPrinter {
+public class TouDevRawPrinter {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public class DOCINFO {
         public string pDocName;
@@ -45,33 +45,33 @@ public class KonoposRawPrinter {
 }
 "@
 $h = [IntPtr]::Zero
-if (-not [KonoposRawPrinter]::OpenPrinter($PrinterName, [ref]$h, [IntPtr]::Zero)) {
+if (-not [TouDevRawPrinter]::OpenPrinter($PrinterName, [ref]$h, [IntPtr]::Zero)) {
     throw "Impossible d'ouvrir l'imprimante Windows : $PrinterName"
 }
 try {
-    $di = New-Object KonoposRawPrinter+DOCINFO
-    $di.pDocName = "KonoPOS"
+    $di = New-Object TouDevRawPrinter+DOCINFO
+    $di.pDocName = "TouDev"
     $di.pDataType = "RAW"
-    if (-not [KonoposRawPrinter]::StartDocPrinter($h, 1, $di)) {
+    if (-not [TouDevRawPrinter]::StartDocPrinter($h, 1, $di)) {
         throw "StartDocPrinter a echoue pour $PrinterName"
     }
     try {
-        if (-not [KonoposRawPrinter]::StartPagePrinter($h)) {
+        if (-not [TouDevRawPrinter]::StartPagePrinter($h)) {
             throw "StartPagePrinter a echoue pour $PrinterName"
         }
         try {
             $written = 0
-            if (-not [KonoposRawPrinter]::WritePrinter($h, $bytes, $bytes.Length, [ref]$written)) {
+            if (-not [TouDevRawPrinter]::WritePrinter($h, $bytes, $bytes.Length, [ref]$written)) {
                 throw "WritePrinter a echoue pour $PrinterName"
             }
         } finally {
-            [KonoposRawPrinter]::EndPagePrinter($h) | Out-Null
+            [TouDevRawPrinter]::EndPagePrinter($h) | Out-Null
         }
     } finally {
-        [KonoposRawPrinter]::EndDocPrinter($h) | Out-Null
+        [TouDevRawPrinter]::EndDocPrinter($h) | Out-Null
     }
 } finally {
-    [KonoposRawPrinter]::ClosePrinter($h) | Out-Null
+    [TouDevRawPrinter]::ClosePrinter($h) | Out-Null
 }
 `;
 
@@ -102,7 +102,7 @@ function sendToTcpPrinter(host, port, data, timeoutMs = 8000) {
 }
 
 async function writeTempPrintFile(data) {
-  const tempFile = path.join(os.tmpdir(), `konopos-print-${Date.now()}-${Math.random().toString(36).slice(2)}.bin`);
+  const tempFile = path.join(os.tmpdir(), `TouDev-print-${Date.now()}-${Math.random().toString(36).slice(2)}.bin`);
   await fs.promises.writeFile(tempFile, data);
   return tempFile;
 }
@@ -113,7 +113,7 @@ async function removeTempPrintFile(tempFile) {
 
 async function sendRawToWindowsPrinter(printerName, data) {
   const tempFile = await writeTempPrintFile(data);
-  const scriptFile = path.join(os.tmpdir(), `konopos-print-${Date.now()}-${Math.random().toString(36).slice(2)}.ps1`);
+  const scriptFile = path.join(os.tmpdir(), `TouDev-print-${Date.now()}-${Math.random().toString(36).slice(2)}.ps1`);
   await fs.promises.writeFile(scriptFile, RAW_PRINTER_PS, 'utf8');
   try {
     await execFileAsync(

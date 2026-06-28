@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const STORAGE_KEY = 'konopos_pos_catalog_split_pct';
+const STORAGE_KEY = 'TouDev_pos_catalog_split_pct';
 const DEFAULT_PCT = 58;
 const MIN_CATALOG_PCT = 35;
 const MAX_CATALOG_PCT = 75;

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
+import useIsMobile from '../../hooks/useIsMobile';
 import {
   Sheet,
   SheetContent,
@@ -33,6 +34,19 @@ export default function MobileFilterSheetShell({
   children,
   footer,
 }) {
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (!isMobile) return undefined;
+    const root = document.documentElement;
+    if (open) {
+      root.classList.add('filter-sheet-open');
+    } else {
+      root.classList.remove('filter-sheet-open');
+    }
+    return () => root.classList.remove('filter-sheet-open');
+  }, [open, isMobile]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent

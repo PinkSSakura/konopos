@@ -58,7 +58,7 @@
 
 .pos-split-layout__handle:hover,
 .pos-split-layout__handle:active {
-  background: color-mix(in srgb, var(--brand-gold) 18%, transparent);
+  background: color-mix(in srgb, var(--brand-primary) 18%, transparent);
 }
 
 .pos-page > .pos-catalog-panel,
@@ -138,7 +138,7 @@
   outline: none;
   box-shadow:
     0 4px 14px rgba(0, 0, 0, 0.08),
-    0 0 0 1px color-mix(in srgb, var(--brand-gold, #ceb38f) 55%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--brand-primary, #c2462d) 55%, transparent);
 }
 
 .pos-catalog-tile:active {
@@ -228,7 +228,7 @@
   margin-top: 0.25rem;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--brand-gold, #ceb38f);
+  color: var(--brand-primary, #c2462d);
 }
 
 .pos-catalog-tile--category .pos-catalog-tile__media {
@@ -297,13 +297,13 @@
 
 .pos-add-dialog__btn--confirm {
   border: none !important;
-  background: var(--brand-gold, #ceb38f) !important;
+  background: var(--brand-primary, #c2462d) !important;
   color: var(--brand-charcoal, #34373c) !important;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .pos-add-dialog__btn--confirm:hover {
-  background: color-mix(in oklch, var(--brand-gold, #ceb38f), #000 6%) !important;
+  background: color-mix(in oklch, var(--brand-primary, #c2462d), #000 6%) !important;
   color: var(--brand-charcoal, #34373c) !important;
 }
 

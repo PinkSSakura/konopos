@@ -16,8 +16,6 @@ import {
 
   ReceiptText,
 
-  FileDown,
-
 } from 'lucide-react';
 
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, XAxis, YAxis } from 'recharts';
@@ -29,15 +27,17 @@ import { todayDateString, formatDateTime } from '../../utils/dateFilters';
 import { downloadPdf } from '../../utils/pdfExport';
 import { toast } from 'sonner';
 
-import Combobox from '../../components/Combobox';
-
 import DatePicker from '../../components/DatePicker';
+
+import CollapsibleToolbar from '../../components/layout/CollapsibleToolbar';
 
 import '../../styles/analytics-dashboard.css';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 import { Button } from '@/components/ui/button';
+
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 import { Badge } from '@/components/ui/badge';
 
@@ -327,13 +327,16 @@ export default function AnalyticsDashboardPage() {
 
   }));
 
-
+  const periodLabel = PERIOD_OPTIONS.find((option) => option.value === period)?.label || period;
+  const toolbarSummary = data
+    ? `${periodLabel} · ${formatRange(data.from, data.to, data.period)}`
+    : `${periodLabel} · ${date}`;
 
   return (
 
     <div className="analytics-dashboard">
 
-      <div className="analytics-dashboard-header page-header mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="analytics-dashboard-header page-header mb-3">
         <div>
           <h2 className="text-xl font-semibold sm:text-2xl">Tableau de bord</h2>
 
@@ -344,37 +347,45 @@ export default function AnalyticsDashboardPage() {
           )}
 
         </div>
-
-        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-          <Combobox
-            options={PERIOD_OPTIONS}
-            value={period}
-            onValueChange={setPeriod}
-            placeholder="Période"
-            className="w-full min-w-0 flex-1 sm:w-[170px] sm:flex-none"
-          />
-          <DatePicker value={date} onChange={setDate} className="w-full min-w-0 flex-1 sm:w-[200px] sm:flex-none" />
-
-          <Button type="button" className="w-full flex-1 sm:w-auto" onClick={load} disabled={loading}>
-            Actualiser
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full flex-1 sm:w-auto"
-            onClick={exportBusinessPdf}
-            disabled={exportingPdf || loading}
-          >
-            <FileDown className="mr-2 size-4" />
-            {exportingPdf ? 'Export…' : 'Exporter PDF'}
-          </Button>
-          <Link to="/pos" className="w-full flex-1 sm:w-auto">
-            <Button type="button" variant="outline" className="w-full">Point de vente</Button>
-          </Link>
-
-        </div>
-
       </div>
+
+      <CollapsibleToolbar title="Filtres & actions" summary={toolbarSummary} className="mb-4">
+        <div className="analytics-toolbar-grid">
+          <div className="analytics-toolbar-grid__filters">
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={period}
+              onValueChange={(value) => value && setPeriod(value)}
+              className="analytics-toolbar-grid__period w-full"
+            >
+              {PERIOD_OPTIONS.map((option) => (
+                <ToggleGroupItem key={option.value} value={option.value} className="flex-1">
+                  {option.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <DatePicker value={date} onChange={setDate} className="w-full" />
+          </div>
+          <div className="analytics-toolbar-grid__actions">
+            <Button type="button" className="w-full" onClick={load} disabled={loading}>
+              Actualiser
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={exportBusinessPdf}
+              disabled={exportingPdf || loading}
+            >
+              {exportingPdf ? '…' : 'PDF'}
+            </Button>
+            <Link to="/pos" className="w-full">
+              <Button type="button" variant="outline" className="w-full">POS</Button>
+            </Link>
+          </div>
+        </div>
+      </CollapsibleToolbar>
 
 
 

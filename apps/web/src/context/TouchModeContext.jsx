@@ -3,7 +3,7 @@ import React, {
 } from 'react';
 import { useAuth } from './AuthContext';
 
-const STORAGE_KEY = 'konopos_touch_mode';
+const STORAGE_KEY = 'TouDev_touch_mode';
 
 const TouchModeContext = createContext(null);
 

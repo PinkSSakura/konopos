@@ -1,8 +1,8 @@
 {
   "name": "@konopos/electron-desktop",
-  "version": "3.3.4",
-  "description": "KonoPOS desktop — POS local café & restaurant",
-  "author": "KonoPOS",
+  "version": "3.4.0",
+  "description": "TouDev desktop — POS local café & restaurant",
+  "author": "TouDev",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -22,8 +22,8 @@
     "electronVersion": "36.9.5",
     "npmRebuild": false,
     "appId": "com.konopos.pos",
-    "productName": "KonoPOS",
-    "copyright": "KonoPOS",
+    "productName": "TouDev",
+    "copyright": "TouDev",
     "directories": {
       "output": "../../release-build"
     },
@@ -93,7 +93,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "allowElevation": true,
-      "artifactName": "KonoPOS-Setup-${version}.${ext}",
+      "artifactName": "TouDev-Setup-${version}.${ext}",
       "deleteAppDataOnUninstall": false
     }
   }

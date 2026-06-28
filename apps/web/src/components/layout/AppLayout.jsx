@@ -59,7 +59,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const SIDER_COLLAPSED_KEY = 'konopos_sider_collapsed';
+const SIDER_COLLAPSED_KEY = 'TouDev_sider_collapsed';
 
 function readSiderCollapsed() {
   try {
@@ -324,7 +324,7 @@ export default function AppLayout() {
 
   const siderBrand = isMobile ? (
     <div className="app-sider-brand">
-      <AppLogo variant="long" className="app-logo--sider-long" alt="KonoPOS" />
+      <AppLogo variant="long" className="app-logo--sider-long" alt="TouDev" />
       {touchMode && (
         <Badge variant="secondary" className="app-sider-tactile-tag app-sider-brand-text">
           Tactile
@@ -333,7 +333,7 @@ export default function AppLayout() {
     </div>
   ) : (
     <div className={`app-sider-brand app-sider-brand--desktop ${collapsed ? 'app-sider-brand-collapsed' : 'app-sider-brand--hidden'}`}>
-      <AppLogo variant="mark" className="app-logo--sider-collapsed" alt="KonoPOS" />
+      <AppLogo variant="mark" className="app-logo--sider-collapsed" alt="TouDev" />
     </div>
   );
 

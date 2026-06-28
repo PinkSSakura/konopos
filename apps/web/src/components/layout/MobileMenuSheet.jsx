@@ -36,8 +36,8 @@ export default function MobileMenuSheet({ open, onOpenChange, cards, onNavigate 
                 >
                   <Card
                     className={cn(
-                      'transition-colors hover:border-[var(--brand-gold)]/50 hover:bg-muted/30',
-                      active && 'border-[var(--brand-gold)]/60 bg-muted/20',
+                      'transition-colors hover:border-[var(--brand-primary)]/50 hover:bg-muted/30',
+                      active && 'border-[var(--brand-primary)]/60 bg-muted/20',
                     )}
                   >
                     <CardHeader className="pb-2">

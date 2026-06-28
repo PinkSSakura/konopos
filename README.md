@@ -1,4 +1,4 @@
-# KonoPOS
+# TouDev
 
 Local POS app for restaurants and cafés.
 
@@ -66,7 +66,7 @@ npm run build:desktop
 Output:
 
 ```text
-release-build\KonoPOS-Setup-<version>.exe
+release-build\TouDev-Setup-<version>.exe
 release-build\win-unpacked\
 ```
 
@@ -79,19 +79,19 @@ npm run publish:desktop
 ## Installed App Data
 
 ```powershell
-explorer "$env:APPDATA\KonoPOS\data"
+explorer "$env:APPDATA\TouDev\data"
 ```
 
 SQLite DB path:
 
 ```text
-%APPDATA%\KonoPOS\data\konopos.sqlite3
+%APPDATA%\TouDev\data\konopos.sqlite3
 ```
 
 Installed config file:
 
 ```text
-%APPDATA%\KonoPOS\api.env
+%APPDATA%\TouDev\api.env
 ```
 
 ## Useful Commands

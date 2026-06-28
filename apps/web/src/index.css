@@ -56,11 +56,11 @@ body {
   letter-spacing: -0.03em;
 }
 
-.app-footer__kono {
-  color: var(--brand-gold);
+.app-footer__tou {
+  color: var(--brand-primary);
 }
 
-.app-footer__pos {
+.app-footer__dev {
   color: var(--foreground);
 }
 
@@ -179,17 +179,17 @@ body {
   letter-spacing: -0.05em;
 }
 
-.app-wordmark--login .app-wordmark__kono {
-  color: var(--brand-gold);
+.app-wordmark--login .app-wordmark__tou {
+  color: var(--brand-primary);
 }
 
-.app-wordmark--login .app-wordmark__pos {
+.app-wordmark--login .app-wordmark__dev {
   color: var(--brand-charcoal);
   font-size: 0.93em;
   letter-spacing: -0.02em;
 }
 
-.dark .app-wordmark--login .app-wordmark__pos {
+.dark .app-wordmark--login .app-wordmark__dev {
   color: var(--brand-charcoal-foreground);
 }
 
@@ -242,7 +242,7 @@ body {
 }
 
 .login-input-group input:focus {
-  border-bottom-color: var(--brand-gold);
+  border-bottom-color: var(--brand-primary);
 }
 
 .login-input-group label {
@@ -260,7 +260,7 @@ body {
 .login-input-group input:valid + label {
   top: -8px;
   font-size: 0.75rem;
-  color: var(--brand-gold);
+  color: var(--brand-primary);
 }
 
 .login-input-toggle {
@@ -286,14 +286,14 @@ body {
   width: 100%;
   margin-top: 8px;
   min-height: 44px;
-  background: var(--brand-gold) !important;
-  color: var(--brand-charcoal) !important;
+  background: var(--brand-primary) !important;
+  color: #ffffff !important;
   font-weight: 600;
   border: none;
 }
 
 .login-split__submit:hover:not(:disabled) {
-  background: var(--brand-gold-hover) !important;
+  background: var(--brand-primary-hover) !important;
 }
 
 .login-split__submit:disabled {
@@ -415,11 +415,11 @@ body {
   user-select: none;
 }
 
-.app-wordmark__kono {
-  color: var(--brand-gold);
+.app-wordmark__tou {
+  color: var(--brand-primary);
 }
 
-.app-wordmark__pos {
+.app-wordmark__dev {
   color: var(--brand-charcoal);
 }
 
@@ -734,7 +734,7 @@ html.touch-mode .app-sider-brand-short {
 
 .app-mobile-sidebar [data-slot="sheet-close"] button:hover {
   background: rgba(206, 179, 143, 0.12);
-  color: var(--brand-gold);
+  color: var(--brand-primary);
 }
 
 .app-nav {
@@ -839,7 +839,7 @@ html.touch-mode .app-sider-brand-short {
   line-height: 1.4 !important;
   background: var(--card);
   color: var(--foreground);
-  border-bottom: 2px solid var(--brand-gold);
+  border-bottom: 2px solid var(--brand-primary);
 }
 
 .app-sidebar .app-nav-button {
@@ -848,12 +848,12 @@ html.touch-mode .app-sider-brand-short {
 
 .app-sidebar .app-nav-button:hover {
   background: rgba(206, 179, 143, 0.12);
-  color: var(--brand-gold);
+  color: var(--brand-primary);
 }
 
 .app-sidebar .app-nav-button[data-variant="secondary"] {
   background: rgba(206, 179, 143, 0.16);
-  color: var(--brand-gold);
+  color: var(--brand-primary);
 }
 
 .app-topbar .app-nav-button,
@@ -874,8 +874,8 @@ html.touch-mode .app-sider-brand-short {
 
 .app-topbar__touch--active {
   background: rgba(206, 179, 143, 0.2);
-  border-color: var(--brand-gold);
-  color: var(--brand-gold);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
 }
 
 .app-topbar__left,
@@ -1063,44 +1063,48 @@ html.touch-mode .app-sider-brand-short {
 }
 
 :root {
-  --brand-gold: #ceb38f;
-  --brand-gold-hover: #bda378;
-  --brand-charcoal: #34373c;
-  --brand-charcoal-muted: #4a4e54;
+  /* TouDev palette — main #c2462d + second/third/fourth/secondary */
+  --brand-primary: #c2462d;
+  --brand-primary-hover: #a83a24;
+  --brand-second: #81AE9D;
+  --brand-third: #DDD92A;
+  --brand-fourth: #21A179;
+  --brand-charcoal: #1E1E24;
+  --brand-charcoal-muted: #2d2d35;
   --brand-charcoal-foreground: #f5f3ef;
 
-  --background: #f0eeea;
-  --foreground: #34373c;
+  --background: #f4f3f1;
+  --foreground: #1E1E24;
   --card: #ffffff;
-  --card-foreground: #34373c;
+  --card-foreground: #1E1E24;
   --popover: #ffffff;
-  --popover-foreground: #34373c;
-  --primary: #ceb38f;
-  --primary-foreground: #34373c;
-  --secondary: #e8e4de;
-  --secondary-foreground: #34373c;
-  --muted: #e8e4de;
-  --muted-foreground: #6b6e73;
-  --accent: #ece6dc;
-  --accent-foreground: #34373c;
+  --popover-foreground: #1E1E24;
+  --primary: #c2462d;
+  --primary-foreground: #ffffff;
+  --secondary: #e4eee9;
+  --secondary-foreground: #1E1E24;
+  --muted: #e8ecea;
+  --muted-foreground: #5c6360;
+  --accent: #f5f6d4;
+  --accent-foreground: #1E1E24;
   --destructive: oklch(0.577 0.245 27.325);
   --border: #d8d4ce;
   --input: #d8d4ce;
-  --ring: #ceb38f;
-  --chart-1: #ceb38f;
-  --chart-2: #a89270;
-  --chart-3: #8a7a62;
-  --chart-4: #6b6e73;
-  --chart-5: #34373c;
+  --ring: #81AE9D;
+  --chart-1: #c2462d;
+  --chart-2: #81AE9D;
+  --chart-3: #DDD92A;
+  --chart-4: #21A179;
+  --chart-5: #1E1E24;
   --radius: 0.625rem;
-  --sidebar: #34373c;
+  --sidebar: #1E1E24;
   --sidebar-foreground: #f5f3ef;
-  --sidebar-primary: #ceb38f;
-  --sidebar-primary-foreground: #34373c;
-  --sidebar-accent: #43464c;
+  --sidebar-primary: #c2462d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2d2d35;
   --sidebar-accent-foreground: #f5f3ef;
-  --sidebar-border: #4a4e54;
-  --sidebar-ring: #ceb38f;
+  --sidebar-border: #3a3a44;
+  --sidebar-ring: #81AE9D;
 }
 
 .dark {
@@ -1282,6 +1286,40 @@ html.touch-mode .app-sider-brand-short {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Mobile filter sheet — push main page back subtly while sheet is open */
+@media (max-width: 991px) {
+  html.filter-sheet-open .app-layout-shell--mobile {
+    transform: scale(0.92) translateY(-10px);
+    transform-origin: center top;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(30, 30, 36, 0.28);
+    transition:
+      transform 300ms cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 300ms cubic-bezier(0.32, 0.72, 0, 1),
+      box-shadow 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  html.filter-sheet-open [data-slot="sheet-overlay"] {
+    background-color: rgba(0, 0, 0, 0.35);
+  }
+
+  html:not(.filter-sheet-open) .app-layout-shell--mobile {
+    transition:
+      transform 300ms cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 300ms cubic-bezier(0.32, 0.72, 0, 1),
+      box-shadow 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+}
+
+@media (max-width: 991px) and (prefers-reduced-motion: reduce) {
+  html.filter-sheet-open .app-layout-shell--mobile {
+    transform: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
 .mobile-filter-sheet__body {
   display: flex;
   flex-direction: column;
@@ -1426,4 +1464,90 @@ html.touch-mode .app-sider-brand-short {
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.menu-mobile-card .orders-mobile-card__header {
+  align-items: center;
+}
+
+.menu-mobile-card__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.menu-mobile-card__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.menu-mobile-card__cell--end {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.menu-mobile-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.25;
+}
+
+.menu-mobile-card__sub {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+
+.menu-mobile-card__price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.menu-mobile-card--food {
+  background: var(--secondary);
+  border-color: color-mix(in srgb, var(--secondary) 65%, var(--border));
+}
+
+.menu-mobile-card--food:active {
+  background: color-mix(in srgb, var(--secondary) 88%, var(--muted));
+}
+
+.menu-mobile-card--drink {
+  background: var(--muted);
+  border-color: var(--border);
+}
+
+.menu-mobile-card--drink:active {
+  background: color-mix(in srgb, var(--muted) 88%, var(--background));
+}
+
+.menu-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.menu-filter-panel__extra {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.menu-filter-panel__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .menu-filter-panel__extra {
+    flex-flow: row wrap;
+    align-items: center;
+  }
 }

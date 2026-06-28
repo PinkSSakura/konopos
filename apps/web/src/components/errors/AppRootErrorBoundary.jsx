@@ -29,7 +29,7 @@ export default class AppRootErrorBoundary extends React.Component {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <AlertTriangle className="size-5 text-destructive" />
-              KonoPOS — erreur de démarrage
+              TouDev — erreur de démarrage
             </CardTitle>
             <CardDescription>
               L&apos;application n&apos;a pas pu s&apos;afficher correctement. Vous pouvez recharger ou redémarrer depuis le gestionnaire Electron.

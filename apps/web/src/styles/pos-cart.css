@@ -116,7 +116,7 @@
   flex-shrink: 0;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--brand-gold, #ceb38f);
+  color: var(--brand-primary, #c2462d);
   white-space: nowrap;
 }
 
@@ -227,14 +227,14 @@
 }
 
 .pos-cart-order-type__card:hover {
-  border-color: color-mix(in srgb, var(--brand-gold, #ceb38f) 55%, transparent);
+  border-color: color-mix(in srgb, var(--brand-primary, #c2462d) 55%, transparent);
 }
 
 .pos-cart-order-type__card--active {
-  border-color: var(--brand-gold, #ceb38f);
-  background: color-mix(in srgb, var(--brand-gold, #ceb38f) 14%, #fff);
+  border-color: var(--brand-primary, #c2462d);
+  background: color-mix(in srgb, var(--brand-primary, #c2462d) 14%, #fff);
   color: var(--foreground, #262626);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-gold, #ceb38f) 35%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-primary, #c2462d) 35%, transparent);
 }
 
 .pos-cart-actions {

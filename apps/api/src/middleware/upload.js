@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
-const apiRoot = process.env.KONOPOS_DATA_DIR || path.join(__dirname, '../..');
+const apiRoot = process.env.TouDev_DATA_DIR || path.join(__dirname, '../..');
 const uploadsRoot = path.join(apiRoot, 'uploads');
 
 const categoryUploadDir = path.join(uploadsRoot, 'categories');

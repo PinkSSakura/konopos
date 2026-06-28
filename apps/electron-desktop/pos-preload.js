@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('konoPosShell', {
+contextBridge.exposeInMainWorld('TouDevShell', {
   reload: () => ipcRenderer.invoke('pos-reload'),
   stop: () => ipcRenderer.invoke('pos-close'),
 });
@@ -61,7 +61,7 @@ function injectPosToolbar() {
       filter: brightness(1.03);
     }
     .kono-pos-shell-action--reload {
-      background: #ceb38f;
+      background: #c2462d;
     }
     .kono-pos-shell-action--stop {
       color: #991b1b;

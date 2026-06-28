@@ -32,8 +32,8 @@ function ensureApiEnv() {
       'NODE_ENV=production',
       'PORT=5000',
       'HOST=0.0.0.0',
-      'KONOPOS_LOCAL_POS=1',
-      '# Base SQLite locale (laisser vide pour utiliser KONOPOS_DATA_DIR/konopos.sqlite3) :',
+      'TouDev_LOCAL_POS=1',
+      '# Base SQLite locale (laisser vide pour utiliser TouDev_DATA_DIR/TouDev.sqlite3) :',
       'SQLITE_PATH=',
       'JWT_SECRET=change-me-in-production-use-long-random-string',
       'ALLOW_LAN_CORS=true',
@@ -58,7 +58,7 @@ function ensureDataDir() {
 }
 
 function getBackendEnv() {
-  const localPos = { KONOPOS_LOCAL_POS: '1' };
+  const localPos = { TouDev_LOCAL_POS: '1' };
 
   if (!isPackaged()) {
     return localPos;
@@ -66,8 +66,8 @@ function getBackendEnv() {
 
   return {
     ...localPos,
-    KONOPOS_ENV_FILE: ensureApiEnv(),
-    KONOPOS_DATA_DIR: ensureDataDir(),
+    TouDev_ENV_FILE: ensureApiEnv(),
+    TouDev_DATA_DIR: ensureDataDir(),
   };
 }
 

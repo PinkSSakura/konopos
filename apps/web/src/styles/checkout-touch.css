@@ -45,7 +45,7 @@
   text-align: center;
   padding: 16px 12px;
   background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
-  border: 2px solid #ceb38f;
+  border: 2px solid #c2462d;
   border-radius: 12px;
   margin-bottom: 16px;
 }
@@ -59,7 +59,7 @@
 .checkout-touch-hero__amount {
   font-size: 42px;
   font-weight: 800;
-  color: #ceb38f;
+  color: #c2462d;
   line-height: 1.1;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .checkout-touch-method--active {
-  border-color: #ceb38f;
+  border-color: #c2462d;
   background: #fff1f0;
   color: #cf1322;
 }

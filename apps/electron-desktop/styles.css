@@ -7,10 +7,10 @@
   --card-foreground: #111827;
   --muted: #64748b;
   --border: #e2e8f0;
-  --primary: #ceb38f;
-  --primary-foreground: #34373c;
-  --secondary: #eef2f7;
-  --secondary-foreground: #111827;
+  --primary: #c2462d;
+  --primary-foreground: #ffffff;
+  --secondary: #1E1E24;
+  --secondary-foreground: #f5f3ef;
   --success: #166534;
   --success-bg: #dcfce7;
   --warning: #854d0e;
@@ -57,7 +57,7 @@ body {
   object-fit: contain;
 }
 
-h1 { margin: 0; font-size: 1.3rem; color: #ceb38f; }
+h1 { margin: 0; font-size: 1.3rem; color: #c2462d; }
 h2 { margin: 0 0 6px; font-size: 0.95rem; }
 .subtitle, .hint { margin: 0; color: var(--muted); font-size: 0.85rem; }
 .hint { margin-bottom: 8px; }
@@ -132,7 +132,7 @@ h2 { margin: 0 0 6px; font-size: 0.95rem; }
   letter-spacing: 0.06em;
   padding: 8px 18px;
 }
-.btn-exit:hover:not(:disabled) { background: #ceb38f; }
+.btn-exit:hover:not(:disabled) { background: #c2462d; }
 .btn-exit:disabled { opacity: 0.6; cursor: wait; }
 
 .btn:hover:not(:disabled) {

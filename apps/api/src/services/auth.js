@@ -86,7 +86,7 @@ function isSameTerminalDevice(a, b) {
 
 async function isLoginFromEstablishmentTerminal(req, establishmentId) {
   if (!establishmentId) return false;
-  if (String(req?.headers?.['x-konopos-terminal'] || '').toLowerCase() === 'systempos') {
+  if (String(req?.headers?.['x-TouDev-terminal'] || '').toLowerCase() === 'systempos') {
     return true;
   }
   const systemSession = await findActiveSystemPosSession(establishmentId);
@@ -906,7 +906,7 @@ async function restoreSystemposShellFromParent(res, parentSessionId, establishme
   if (!parentSession && establishmentId) {
     parentSession = await findActiveSystemposShellSession(establishmentId);
   }
-  if (!parentSession && (process.env.KONOPOS_LOCAL_POS === '1' || process.env.KONOPOS_LOCAL_POS === 'true')) {
+  if (!parentSession && (process.env.TouDev_LOCAL_POS === '1' || process.env.TouDev_LOCAL_POS === 'true')) {
     parentSession = await findLatestSystemposShellSession();
   }
   if (!parentSession || !res) return false;

@@ -101,7 +101,7 @@ export default function TableSelectModal({ open, onClose, onSelect, selectedTabl
                 width: t.position?.width ?? 100,
                 height: t.position?.height ?? 60,
                 background: STATUS_BG[t.status] || '#f6ffed',
-                border: selected ? '2px solid #ceb38f' : '2px solid #333',
+                border: selected ? '2px solid #c2462d' : '2px solid #333',
                 borderRadius: 4,
                 cursor: selectable ? 'pointer' : 'not-allowed',
                 opacity: selectable ? 1 : 0.65,

@@ -37,7 +37,7 @@ export default function LicenseRequiredGate({ children }) {
           <h2 className="text-lg font-semibold">Licence requise</h2>
           <p className="text-sm text-muted-foreground">
             Cette installation n&apos;a pas de licence active ou la licence a expiré.
-            Contactez votre administrateur ou le support KonoPOS.
+            Contactez votre administrateur ou le support TouDev.
           </p>
         </CardContent>
       </Card>

@@ -10,7 +10,7 @@ import ExtrasPicker from '../../components/menu/ExtrasPicker';
 import client from '../../api/client';
 import FormPageShell from '../../components/FormPageShell';
 
-const DEFAULT_COLOR = '#ceb38f';
+const DEFAULT_COLOR = '#c2462d';
 
 export default function CategoryFormPage() {
   const { id } = useParams();

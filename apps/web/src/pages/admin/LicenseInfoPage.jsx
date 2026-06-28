@@ -16,7 +16,7 @@ export default function LicenseInfoPage() {
 
   if (loading) {
     return (
-      <PageShell title="Licence" subtitle="Informations sur la licence KonoPOS de cette installation.">
+      <PageShell title="Licence" subtitle="Informations sur la licence TouDev de cette installation.">
         <InlineLoading label="Chargement de la licence…" />
       </PageShell>
     );
@@ -25,7 +25,7 @@ export default function LicenseInfoPage() {
   return (
     <PageShell
       title="Licence"
-      subtitle="Informations sur la licence KonoPOS de cette installation."
+      subtitle="Informations sur la licence TouDev de cette installation."
     >
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
         <PageTableCard title="État de la licence">

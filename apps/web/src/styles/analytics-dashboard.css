@@ -10,3 +10,27 @@
 .analytics-kpis .ant-card {
   height: 100%;
 }
+
+.analytics-toolbar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.analytics-toolbar-grid__filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.analytics-toolbar-grid__period {
+  display: flex;
+  width: 100%;
+}
+
+.analytics-toolbar-grid__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}

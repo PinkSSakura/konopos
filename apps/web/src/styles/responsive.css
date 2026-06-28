@@ -31,20 +31,31 @@
 
 .page-shell__header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+}
+
+.page-shell__intro {
+  flex: 1;
+  min-width: 0;
 }
 
 .page-shell__action {
-  width: 100%;
+  width: auto;
+  flex-shrink: 0;
 }
 
 .page-shell__action .btn,
 .page-shell__action a,
 .page-shell__action button {
-  width: 100%;
+  width: auto;
+}
+
+.page-shell__action > a {
+  display: inline-block;
+  width: auto;
 }
 
 /* ── Hub sub-navigation ───────────────────────────────────── */

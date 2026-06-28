@@ -63,7 +63,7 @@ function spawnWeb(env = {}) {
         ...env,
         PORT: port,
         WEB_DIST_DIR: distDir,
-        KONOPOS_STATIC_NO_CACHE: isPackaged() ? '1' : '',
+        TouDev_STATIC_NO_CACHE: isPackaged() ? '1' : '',
         API_HOST: '127.0.0.1',
         API_PORT: apiPort,
       },

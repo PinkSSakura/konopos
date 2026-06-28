@@ -369,7 +369,7 @@ export default function ShiftPlannerCalendar({
                 key={day.format('YYYY-MM-DD')}
                 className={cn(
                   'border-l border-border px-2 py-2 text-center text-xs font-medium',
-                  day.isSame(dayjs(), 'day') && 'bg-[var(--brand-gold)]/10',
+                  day.isSame(dayjs(), 'day') && 'bg-[var(--brand-primary)]/10',
                 )}
               >
                 <div className="capitalize">{day.format('ddd')}</div>
@@ -405,7 +405,7 @@ export default function ShiftPlannerCalendar({
                   data-day-column
                   className={cn(
                     'relative touch-none border-l border-border select-none',
-                    day.isSame(dayjs(), 'day') && 'bg-[var(--brand-gold)]/5',
+                    day.isSame(dayjs(), 'day') && 'bg-[var(--brand-primary)]/5',
                     onRangeSelect && 'cursor-crosshair',
                   )}
                   style={{ height: (HOUR_END - HOUR_START) * HOUR_HEIGHT }}
@@ -427,7 +427,7 @@ export default function ShiftPlannerCalendar({
                       className={cn(
                         'pointer-events-none absolute left-1 right-1 z-20 rounded border-2 border-dashed px-1.5 py-0.5',
                         preview.type === 'create'
-                          ? 'border-[var(--brand-gold)] bg-[var(--brand-gold)]/25'
+                          ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]/25'
                           : 'border-primary bg-primary/20',
                       )}
                       style={{

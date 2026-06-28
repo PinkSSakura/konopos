@@ -172,7 +172,7 @@ export default function LicensePage() {
 
       title="Licence"
 
-      subtitle="Activez KonoPOS pour cette machine. La licence est liée à l'empreinte matérielle du serveur."
+      subtitle="Activez TouDev pour cette machine. La licence est liée à l'empreinte matérielle du serveur."
 
     >
 

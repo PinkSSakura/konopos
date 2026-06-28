@@ -6,6 +6,7 @@ import client from '../../api/client';
 import { todayDateString, formatDateTime, formatDate } from '../../utils/dateFilters';
 import { downloadPdf } from '../../utils/pdfExport';
 import DatePicker from '../../components/DatePicker';
+import CollapsibleToolbar from '../../components/layout/CollapsibleToolbar';
 import { CardLoading } from '../../components/loading/LoadingStates';
 import { useAuth } from '../../context/AuthContext';
 import { useShift } from '../../context/ShiftContext';
@@ -260,7 +261,7 @@ export default function ShiftPage() {
         <div className="shift-start-gate">
           <Card className="shift-start-gate__card border-0 shadow-none">
             <CardContent className="flex flex-col items-center px-6 py-8 text-center">
-              <PlayCircle className="shift-start-gate__icon size-12 text-[var(--brand-gold)]" />
+              <PlayCircle className="shift-start-gate__icon size-12 text-[var(--brand-primary)]" />
               <h2 className="mb-2 mt-2 text-xl font-semibold">Démarrer votre shift</h2>
               <p className="mb-6 max-w-md text-muted-foreground">
                 Ouvrez votre shift pour accéder au point de vente et aux actions de service.
@@ -391,41 +392,72 @@ export default function ShiftPage() {
           {!usesDailyCloseExport && periodToggle}
         </CardHeader>
         <CardContent>
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={refreshSummary}
-              disabled={loading || loadingDailyClose}
+          {usesDailyCloseExport ? (
+            <CollapsibleToolbar
+              title="Options"
+              summary={formatDate(reportDate)}
+              className="mb-4"
             >
-              Actualiser
-            </Button>
-            {usesDailyCloseExport && (
+              <div className="collapsible-toolbar__actions">
+                <DatePicker value={reportDate} onChange={setReportDate} className="w-full sm:w-[160px]" />
+                <div className="collapsible-toolbar__primary">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    onClick={refreshSummary}
+                    disabled={loading || loadingDailyClose}
+                  >
+                    Actualiser
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    onClick={async () => {
+                      try {
+                        await client.post('/shifts/waiter-daily-close/print', { date: reportDate });
+                        message.success('Rapport envoyé à l\'imprimante caisse');
+                      } catch (err) {
+                        message.error(err.response?.data?.message || 'Erreur impression');
+                      }
+                    }}
+                  >
+                    Imprimer (caisse)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    onClick={exportMyReportPdf}
+                    disabled={exportingPdf}
+                  >
+                    Exporter PDF (jour)
+                  </Button>
+                </div>
+              </div>
+            </CollapsibleToolbar>
+          ) : (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={async () => {
-                  try {
-                    await client.post('/shifts/waiter-daily-close/print', { date: reportDate });
-                    message.success('Rapport envoyé à l\'imprimante caisse');
-                  } catch (err) {
-                    message.error(err.response?.data?.message || 'Erreur impression');
-                  }
-                }}
+                onClick={refreshSummary}
+                disabled={loading || loadingDailyClose}
               >
-                Imprimer (caisse)
+                Actualiser
               </Button>
-            )}
-            {!usesDailyCloseExport && canPrintSummary && (
-              <Button variant="outline" size="sm" onClick={() => window.print()}>
-                Imprimer
+              {canPrintSummary && (
+                <Button variant="outline" size="sm" onClick={() => window.print()}>
+                  Imprimer
+                </Button>
+              )}
+              <DatePicker value={reportDate} onChange={setReportDate} className="w-[160px]" />
+              <Button variant="outline" size="sm" onClick={exportMyReportPdf} disabled={exportingPdf}>
+                Exporter PDF (jour)
               </Button>
-            )}
-            <DatePicker value={reportDate} onChange={setReportDate} className="w-[160px]" />
-            <Button variant="outline" size="sm" onClick={exportMyReportPdf} disabled={exportingPdf}>
-              Exporter PDF (jour)
-            </Button>
-          </div>
+            </div>
+          )}
           {usesDailyCloseExport ? (
             loadingDailyClose ? (
               <CardLoading />

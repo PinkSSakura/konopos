@@ -32,9 +32,9 @@ import {
   useFloatingRect,
 } from '../../hooks/useFloatingDrag';
 
-const STORAGE_LANG = 'konopos_touch_kb_lang';
-const STORAGE_FAB = 'konopos_touch_kb_fab';
-const STORAGE_PANEL = 'konopos_touch_kb_panel';
+const STORAGE_LANG = 'TouDev_touch_kb_lang';
+const STORAGE_FAB = 'TouDev_touch_kb_fab';
+const STORAGE_PANEL = 'TouDev_touch_kb_panel';
 
 const FAB_SIZE = 56;
 const FAB_SIZE_TOUCH = 64;

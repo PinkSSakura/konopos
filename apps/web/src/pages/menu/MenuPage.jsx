@@ -29,7 +29,7 @@ export default function MenuPage() {
 
           return (
             <Link key={item.key} to={item.path} className="group block h-full">
-              <Card className="h-full transition-colors hover:border-[var(--brand-gold)]/50 hover:bg-muted/30">
+              <Card className="h-full transition-colors hover:border-[var(--brand-primary)]/50 hover:bg-muted/30">
                 <CardHeader className="pb-3">
                   <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-[var(--brand-charcoal)] text-[var(--brand-charcoal-foreground)]">
                     <Icon className="size-5" aria-hidden />
@@ -53,7 +53,7 @@ export default function MenuPage() {
                   <CardDescription>{item.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <span className="text-xs font-medium text-[var(--brand-gold)]">Ouvrir</span>
+                  <span className="text-xs font-medium text-[var(--brand-primary)]">Ouvrir</span>
                 </CardContent>
               </Card>
             </Link>

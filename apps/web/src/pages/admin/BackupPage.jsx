@@ -26,7 +26,7 @@ export default function BackupPage() {
       const res = await client.get('/admin/backup/export', { responseType: 'blob' });
       const disposition = res.headers['content-disposition'] || '';
       const match = disposition.match(/filename="([^"]+)"/);
-      const filename = match?.[1] || `konopos-backup-${Date.now()}.zip`;
+      const filename = match?.[1] || `TouDev-backup-${Date.now()}.zip`;
       downloadBlob(res.data, filename);
       message.success('Sauvegarde téléchargée');
     } catch (err) {

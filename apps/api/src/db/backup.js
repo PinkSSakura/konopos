@@ -11,16 +11,16 @@ function resolveDatabasePath(filePath) {
 
 function getDatabasePath() {
   if (config.sqlitePath) return resolveDatabasePath(config.sqlitePath);
-  const dataDir = process.env.KONOPOS_DATA_DIR || path.join(__dirname, '..', '..', 'data');
-  return path.join(dataDir, 'konopos.sqlite3');
+  const dataDir = process.env.TouDev_DATA_DIR || path.join(__dirname, '..', '..', 'data');
+  return path.join(dataDir, 'TouDev.sqlite3');
 }
 
 function isDesktopPos() {
-  return process.env.KONOPOS_LOCAL_POS === '1';
+  return process.env.TouDev_LOCAL_POS === '1';
 }
 
 function getDataDir() {
-  if (process.env.KONOPOS_DATA_DIR) return process.env.KONOPOS_DATA_DIR;
+  if (process.env.TouDev_DATA_DIR) return process.env.TouDev_DATA_DIR;
   return path.dirname(getDatabasePath());
 }
 
@@ -29,7 +29,7 @@ function backupTimestamp() {
 }
 
 function sqlitePaths(dataDir) {
-  const dbPath = path.join(dataDir, 'konopos.sqlite3');
+  const dbPath = path.join(dataDir, 'TouDev.sqlite3');
   return [dbPath, `${dbPath}-wal`, `${dbPath}-shm`].filter((filePath) => fs.existsSync(filePath));
 }
 
@@ -100,7 +100,7 @@ function restoreDataBackup(backupDir, dataDir) {
     throw new Error(`Sauvegarde introuvable : ${backupDir}`);
   }
 
-  for (const fileName of ['konopos.sqlite3', 'konopos.sqlite3-wal', 'konopos.sqlite3-shm']) {
+  for (const fileName of ['TouDev.sqlite3', 'TouDev.sqlite3-wal', 'TouDev.sqlite3-shm']) {
     const src = path.join(backupDir, fileName);
     const dest = path.join(dataDir, fileName);
     if (fs.existsSync(src)) {
@@ -123,7 +123,7 @@ function restoreDataBackup(backupDir, dataDir) {
 }
 
 function zipBackupFolder(folderPath) {
-  const zipPath = path.join(os.tmpdir(), `konopos-backup-${Date.now()}.zip`);
+  const zipPath = path.join(os.tmpdir(), `TouDev-backup-${Date.now()}.zip`);
   if (process.platform !== 'win32') {
     throw new Error('Export ZIP disponible uniquement sur Windows.');
   }

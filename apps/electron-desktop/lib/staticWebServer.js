@@ -101,7 +101,7 @@ function serveStatic(req, res) {
         }
         res.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
-          ...(process.env.KONOPOS_STATIC_NO_CACHE === '1'
+          ...(process.env.TouDev_STATIC_NO_CACHE === '1'
             ? { 'Cache-Control': 'no-store, no-cache, must-revalidate', Pragma: 'no-cache' }
             : {}),
         });
@@ -112,7 +112,7 @@ function serveStatic(req, res) {
 
     const ext = path.extname(filePath).toLowerCase();
     const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' };
-    if (process.env.KONOPOS_STATIC_NO_CACHE === '1') {
+    if (process.env.TouDev_STATIC_NO_CACHE === '1') {
       headers['Cache-Control'] = 'no-store, no-cache, must-revalidate';
       headers.Pragma = 'no-cache';
     }

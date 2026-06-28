@@ -10,10 +10,12 @@ export default function PagePrimaryButton({
   children,
   className,
   type = 'button',
+  size,
 }) {
   const button = (
     <Button
       type={type}
+      size={size}
       className={cn('w-full sm:w-auto', className)}
       onClick={onClick}
     >

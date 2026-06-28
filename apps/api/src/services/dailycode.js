@@ -139,7 +139,7 @@ function buildDailyCodeSlipPayload(establishment, order, dailyCode) {
   meta.push('Conservez ce ticket pour le paiement');
 
   return {
-    title: establishment.name || 'KonoPOS',
+    title: establishment.name || 'TouDev',
     subtitle: 'CODE DU JOUR',
     code: dailyCode,
     meta,

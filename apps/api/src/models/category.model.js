@@ -9,7 +9,7 @@ module.exports = defineModel('Category', {
     deleted_by: 'User',
   },
   defaults: {
-    color: '#fc2c46',
+    color: '#c2462d',
     extra_ids: [],
     ...auditDefaults,
   },

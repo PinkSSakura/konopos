@@ -25,7 +25,7 @@ async function exportBackup(req, res, next) {
     zipPath = zipBackupFolder(snapshotDir);
 
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    const filename = `konopos-backup-${stamp}.zip`;
+    const filename = `TouDev-backup-${stamp}.zip`;
     res.download(zipPath, filename, () => {
       if (zipPath && fs.existsSync(zipPath)) fs.rmSync(zipPath, { force: true });
       if (snapshotDir && fs.existsSync(snapshotDir)) fs.rmSync(snapshotDir, { recursive: true, force: true });

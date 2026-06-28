@@ -19,18 +19,18 @@ const config = {
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   vapidPublicKey: process.env.VAPID_PUBLIC_KEY || '',
   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY || '',
-  vapidSubject: process.env.VAPID_SUBJECT || 'mailto:noreply@konopos.local',
+  vapidSubject: process.env.VAPID_SUBJECT || 'mailto:noreply@TouDev.local',
   /** Autorise les origines 192.168.x.x / 10.x.x.x (défaut: oui en dev, non en prod) */
   allowLanCors:
     process.env.ALLOW_LAN_CORS === 'true'
     || (process.env.ALLOW_LAN_CORS !== 'false' && process.env.NODE_ENV !== 'production'),
-  defaultMainColor: '#fc2c46',
+  defaultMainColor: '#c2462d',
   defaultSecondaryColor: '#f5f5f5',
   defaultCurrency: 'MAD',
   /** POS local embarqué (Electron) — pas de licence machine requise */
   localPos:
-    process.env.KONOPOS_LOCAL_POS === '1'
-    || process.env.KONOPOS_LOCAL_POS === 'true',
+    process.env.TouDev_LOCAL_POS === '1'
+    || process.env.TouDev_LOCAL_POS === 'true',
 };
 
 module.exports = config;

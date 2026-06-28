@@ -157,7 +157,7 @@ function lineToApiPayload(line) {
 
 function CategoryCard({ category, onClick }) {
   const hasImage = Boolean(category.image_url);
-  const accent = category.color || '#ceb38f';
+  const accent = category.color || '#c2462d';
 
   return (
     <div className="pos-catalog-col">
@@ -187,7 +187,7 @@ function CategoryCard({ category, onClick }) {
 }
 
 function ProductTile({ item, onClick }) {
-  const placeholderColor = item.product_type === 'DRINK' ? '#1677ff' : '#ceb38f';
+  const placeholderColor = item.product_type === 'DRINK' ? '#1677ff' : '#c2462d';
 
   return (
     <div className="pos-catalog-col">

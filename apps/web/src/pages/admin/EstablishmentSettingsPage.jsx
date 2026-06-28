@@ -546,7 +546,7 @@ export default function EstablishmentSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Imprimantes cuisine / bar</CardTitle>
-            <CardDescription>USB (PC KonoPOS) ou TCP/IP — tickets filtrés FOOD / DRINK</CardDescription>
+            <CardDescription>USB (PC TouDev) ou TCP/IP — tickets filtrés FOOD / DRINK</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
@@ -559,7 +559,7 @@ export default function EstablishmentSettingsPage() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
-                Bon de commande sans prix. USB : imprimantes branchées sur le PC qui exécute KonoPOS.
+                Bon de commande sans prix. USB : imprimantes branchées sur le PC qui exécute TouDev.
               </p>
               <Button
                 type="button"
