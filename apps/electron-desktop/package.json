@@ -1,0 +1,100 @@
+{
+  "name": "@konopos/electron-desktop",
+  "version": "3.3.2",
+  "description": "KonoPOS desktop — POS local café & restaurant",
+  "author": "KonoPOS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "node scripts/embed-update-token.js && electron-builder --config electron-builder.config.js",
+    "dist:win": "node scripts/embed-update-token.js && electron-builder --config electron-builder.config.js --win",
+    "publish:win": "node scripts/publish-win.js"
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "36.9.5",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "electronVersion": "36.9.5",
+    "npmRebuild": false,
+    "appId": "com.konopos.pos",
+    "productName": "KonoPOS",
+    "copyright": "KonoPOS",
+    "directories": {
+      "output": "../../release-build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "renderer.js",
+      "styles.css",
+      "icon.ico",
+      "logo.png",
+      "backendManager.js",
+      "webManager.js",
+      "pos-preload.js",
+      "lib/**/*",
+      "lib/updateToken.built.js",
+      "scripts/embed-update-token.js",
+      "scripts/github-publish-release.js",
+      "package.json"
+    ],
+    "icon": "logo.png",
+    "extraResources": [
+      {
+        "from": "../../apps/api",
+        "to": "bundle/apps/api",
+        "filter": ["**/*", "!.env", "!.env.local", "!node_modules", "!node_modules/**"]
+      },
+      {
+        "from": "../../apps/web/dist",
+        "to": "bundle/apps/web/dist"
+      },
+      {
+        "from": "../../apps/web/vite.config.js",
+        "to": "bundle/apps/web/vite.config.js"
+      },
+      {
+        "from": "../../apps/web/package.json",
+        "to": "bundle/apps/web/package.json"
+      },
+      {
+        "from": "../../package.json",
+        "to": "bundle/package.json"
+      },
+      {
+        "from": "../../node_modules",
+        "to": "bundle/node_modules",
+        "filter": [
+          "**/*",
+          "!@konopos",
+          "!@konopos/**",
+          "!@konopos/.*",
+          "!@konopos/.*/**",
+          "!**/.pnpm",
+          "!**/.pnpm/**",
+          "!**/.bin",
+          "!**/.bin/**",
+          "!**/{.bin,electron,@electron,electron-builder,app-builder-bin}/**",
+          "!**/.cache/**"
+        ]
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "artifactName": "KonoPOS-Setup-${version}.${ext}",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

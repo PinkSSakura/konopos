@@ -1,0 +1,232 @@
+/* Clavier virtuel flottant — mode tactile (déplaçable / redimensionnable) */
+
+body.touch-kb-dragging {
+  user-select: none;
+  cursor: grabbing;
+}
+
+body.touch-kb-dragging * {
+  cursor: grabbing !important;
+}
+
+.touch-kb-fab-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  cursor: grab;
+}
+
+.touch-kb-fab-wrap:active {
+  cursor: grabbing;
+}
+
+.touch-kb-fab {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: unset !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.touch-kb-fab-lg {
+  font-size: 26px;
+}
+
+.touch-kb-panel {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 2px solid #ceb38f;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  touch-action: none;
+  box-sizing: border-box;
+  visibility: visible;
+  opacity: 1;
+}
+
+.touch-kb-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #fff7f8;
+  border-bottom: 1px solid #ffd6dc;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.touch-kb-panel-header:active {
+  cursor: grabbing;
+}
+
+.touch-kb-drag-grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #999;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+html.touch-mode .touch-kb-drag-grip {
+  width: 44px;
+  height: 44px;
+  font-size: 22px;
+}
+
+.touch-kb-header-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.touch-kb-lang .ant-segmented-item-label {
+  min-width: 44px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+html.touch-mode .touch-kb-lang .ant-segmented-item-label {
+  min-width: 52px;
+  font-size: 17px;
+  padding: 6px 12px;
+}
+
+.touch-kb-hint {
+  flex: 1;
+  min-width: 80px;
+  font-size: 13px;
+}
+
+.touch-kb-close {
+  flex-shrink: 0;
+}
+
+.touch-kb-panel-body {
+  flex: 1;
+  overflow: auto;
+  padding: 10px 12px 12px;
+  min-height: 0;
+}
+
+.touch-kb-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  user-select: none;
+}
+
+.touch-kb-keys-rtl .touch-kb-row {
+  direction: rtl;
+}
+
+.touch-kb-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.touch-kb-key {
+  min-width: 36px;
+  height: 40px;
+  padding: 0 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex: 0 1 auto;
+}
+
+html.touch-mode .touch-kb-key {
+  min-width: 40px;
+  height: 48px;
+  font-size: 18px;
+  border-radius: 10px;
+}
+
+.touch-kb-key:active {
+  background: #ffe8eb;
+  border-color: #ceb38f;
+}
+
+.touch-kb-key-space {
+  flex: 1 1 100px;
+  max-width: 240px;
+}
+
+.touch-kb-row-actions {
+  margin-top: 4px;
+}
+
+.touch-kb-key-action {
+  min-width: 64px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+html.touch-mode .touch-kb-key-action {
+  min-width: 76px;
+  height: 48px;
+  font-size: 14px;
+}
+
+.touch-kb-key-active {
+  background: #ceb38f;
+  color: #fff;
+  border-color: #ceb38f;
+}
+
+.touch-kb-key-enter {
+  flex: 1 1 80px;
+  max-width: 180px;
+  background: #ceb38f;
+  color: #fff;
+  border-color: #ceb38f;
+}
+
+.touch-kb-key-enter:active {
+  background: #d91e36;
+}
+
+.touch-kb-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: nwse-resize;
+  color: #ceb38f;
+  font-size: 16px;
+  background: linear-gradient(135deg, transparent 50%, #fff0f2 50%);
+  border-bottom-right-radius: 10px;
+  touch-action: none;
+}
+
+html.touch-mode .touch-kb-resize-handle {
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.touch-kb-panel {
+  position: fixed;
+}

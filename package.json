@@ -1,0 +1,33 @@
+{
+  "name": "konopos",
+  "private": true,
+  "version": "3.3.2",
+  "description": "POS local pour restaurants et cafés",
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "apps/electron-desktop"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @konopos/api\" \"npm run dev -w @konopos/web\"",
+    "dev:api": "npm run dev -w @konopos/api",
+    "dev:web": "npm run dev -w @konopos/web",
+    "build": "npm run build -w @konopos/web",
+    "start:backend": "npm run start -w @konopos/api",
+    "start:web:lan": "npm run dev -w @konopos/web",
+    "start:web:preview": "npm run preview -w @konopos/web",
+    "start:web:prod": "npm run build -w @konopos/web && npm run preview -w @konopos/web",
+    "start:api": "npm run start -w @konopos/api",
+    "seed": "npm run seed -w @konopos/api",
+    "desktop": "npm run start -w @konopos/electron-desktop",
+    "build:desktop": "npm run build -w @konopos/web && npm run dist:win -w @konopos/electron-desktop",
+    "publish:desktop": "npm run build -w @konopos/web && npm run publish:win -w @konopos/electron-desktop",
+    "publish:desktop:assets": "node apps/electron-desktop/scripts/github-publish-release.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=22.17"
+  }
+}

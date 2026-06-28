@@ -1,0 +1,132 @@
+establishment ( 
+    code_establishment UNIQUE, 
+    name ,
+    address ,
+    email ,
+    ville ,
+    phonenumber ,
+    logo [ IMAGE UPLOAD ],
+    legal_name ,
+    main_color ,
+    secondary_color
+)
+
+role (
+    code_role UNIQUE '2uppercase letter 5digits' => SA00000 
+    name , => superadmin
+    display_name => SUPERADMIN
+    role_type [ enum : systemoffice , backoffice , frontoffice ]
+    ...auditfields
+)
+
+permissions (
+    code_permissions UNIQUE '3uppercase letters - 5digits',
+
+)
+Modules :
+    - Analytics :
+        + backoffice ; frontoffice
+        + view_dashboard {default : SA ; OW ; MG ; SMG} ; self_dashboard {default : SA ; OW ; MG ; SMG ; WT} ; export_pdf {default : SA ; OW ; MG ; SMG}
+
+    - Menu [ Category ]
+        + frontoffice ; backoffice
+        + category_view ; category_create ; category_update ; category_softdelete ; category_restore ; category_view_deleted
+        category_upload_image => all permissions 'default : SA ; OW ; MG ; SMG ; WT'
+    - Menu [ Subcategory ]
+        + frontoffice ; backoffice
+        + subcategory_view ; subcategory_create ; subcategory_update ; subcategory_softdelete ; subcategory_restore ; subcategory_view_deleted
+        subcategory_upload_image => all permissions 'default : SA ; OW ; MG ; SMG ; WT'
+    - Menu [ Extra ]
+        + frontoffice ; backoffice
+        + extra_view ; extra_create ; extra_update ; extra_softdelete ; extra_restore ; extra_view_deleted => all permissions : 'default : SA ; OW ; MG ; SMG ; WT'
+    - Menu [ Item ]
+        + frontoffice ; backoffice
+        + item_view ; item_create ; item_update ; item_softdelete ; item_restore ; item_view_deleted
+        item_upload_image => all permissions 'default : SA ; OW ; MG ; SMG ; WT'
+    
+    - Audit :
+        + backoffice
+        + audit_view {'default : SA ; OW'}
+    
+    - Backup :
+        + backoffice
+        + backup_export ; backup_import => all permissions 'default : SA'
+
+    - Catalog [ POS ]
+        + backoffice ; frontoffice ; systemoffice
+        + catalog_view => all permissions 'default : SA ; OW ; MG ; SMG ; WT ; SYSPOS'
+
+    - Clients :
+        + backoffice ; frontoffice
+        + client_view ; client_create ; client_update ; client_softdelete ; client_restore ; client_view_deleted ; client_manage_savings ; client_manage_debt => all permissions : 'default : SA ; OW ; MG ; SMG ; WT'
+    
+    - Establishment :
+        + backoffice
+        + establishment_view ; establishment_update ; establishment_upload_image ; establishment_legal_update => all permissions  'default : SA ; OW ; MG ; SMG'
+
+    - Expenses :
+        + backoffice ; frontoffice
+        + expense_view ; expense_create ; expense_update ; expense_softdelete ; expense_restore ; expense_view_deleted => all permissions 'default : SA ; OW ; MG ; SMG ; WT'
+
+    - Printers :
+        + backoffice ; frontoffice
+        + printer_create ; printer_update ; printer_delete ; printer_view ; printer_print_preview => all permissions 'default : SA ; OW ; MG ; SMG'
+        + print_receipt ; print_payment_receipt ; print_reprint ; print_kitchen ; print_bar ; print_kitchen_bar ; print_daily_code ; print_order ; print_close_report ; print_close_report_waiters ; print_close_report_barmans ; print_close_report_cooks => all permissions 'default : SA ; OW ; MG ; SMG ; WT ; CK ; BR'
+
+    - KDS :
+        + backoffice ; frontoffice
+        + kds_food {'default : SA ; OW ; MG ; SMG ; CK ; SYSPOS'}; kds_drink {'default : SA ; OW ; MG ; SMG ; BR ; SYSPOS'}; kds_both {'default : SA ; OW ; MG ; SMG ; WT ; SYSPOS'}
+
+    - License :
+        + backoffice
+        + license_view {'default : SA ; OW ; MG ; SMG'} ; license_activate {SA}; license_revoke {SA}
+
+    - Orders :
+        + backoffice ; frontoffice
+        + order_view ; order_history ; order_view_all ; order_create ; order_update ; order_cancel ; order_send ; order_mark_served ; order_mark_cancelled => all permissions 'default : SA ; OW ; MG ; SMG ; WT ; CK ; BR ;  SYSPOS'
+
+    - Payments :
+        + backoffice ; frontoffice
+        + payment_process ; payment_history ; payment_day_close ; payment_cancel ; payment_code_lookup => all permissions 'default : SA ; OW ; MG ; SMG ; WT ; SYSPOS'
+
+    - Permissions :
+        + backoffice
+        + permission_view ; permission_assign => all permissions 'default : SA ; OW ; MG ; SMG'
+
+    - Reports :
+        + backoffice ; frontoffice
+        + report_export_staff ; report_self_export => all permissions 'default : SA ; OW ; MG ; SMG ; BR ; CK ; WT'
+
+    - Roles :
+        + backoffice
+        + role_create ; role_update ; role_delete ; role_assign ; role_restore ; role_view_deleted => {SA}
+
+    - Shifts :
+        + backoffice ; frontoffice
+        + shift_view_all ; shift_view_own ; shift_history ; shift_plan_create ; shift_plan_update ; shift_plan_delete => all permissions 'default : SA ; OW ; MG ; SMG ; WT ; CK ; BR'
+
+    - Floor / Table
+        + backoffice ; frontoffice
+        + floor_create ; floor_update ; floor_delete ; floor_view => all permissions 'default : SA ; OW ; MG ; SMG ; WT'
+        + table_create ; table_update ; table_delete ; table_merge ; table_split ; table_assign  'default : SA ; OW ; MG ; SMG ; WT'
+    
+    - Users :
+        + backoffice ; frontoffice
+        + user_create ; user_update ; user_softdelete ; user_view_profile ; user_view ; user_restore ; user_view_deleted ; user_force_logout => all permissions 'default : SA ; OW ; MG ; SMG ; WT ; CK ; BR'
+
+    
+
+
+- I wanna make a small change ; when sending order and printing ticket caisse [ I want in the receipt to have the daily code ]
+make that change and stop 
+- I wanna make another change; I want some space in the bottom of the receipt
+
+fix the orders sending owner 
+
+I have two waiters [ waiter1 and waiter2 ] using the POS from systemPOS account 
+
+they both launched orders but each time one of them relogin to launch another orders the other waiters orders move the current logged in one 
+
+ask before proceeding
+---------------------
+in Clôture journalière page I want this pdf export with all the details too and fix the date table here by using shadcn UI date table

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KonoPOS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <img src="logo.png" alt="KonoPOS" class="brand-logo" />
+        <div>
+          <h1>KonoPOS</h1>
+          <p class="subtitle">Serveur & interface réseau local</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div id="status-pill" class="status-pill status-stopped">Arrêté</div>
+        <button id="btn-exit" class="btn btn-exit" type="button">EXIT</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Backend</h2>
+      <div class="status-row">
+        <span id="backend-status" class="chip chip-off">—</span>
+      </div>
+      <div class="actions">
+        <button id="btn-backend-start" class="btn btn-secondary">Démarrer</button>
+        <button id="btn-backend-stop" class="btn btn-danger" disabled>Arrêter</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Interface web</h2>
+      <div class="status-row">
+        <span id="web-status" class="chip chip-off">—</span>
+      </div>
+      <div class="actions">
+        <button id="btn-web-start" class="btn btn-secondary">Démarrer</button>
+        <button id="btn-web-stop" class="btn btn-danger" disabled>Arrêter</button>
+      </div>
+      <div class="actions secondary-actions">
+        <button id="btn-open-pos" class="btn btn-primary" disabled>Ouvrir le POS</button>
+        <button id="btn-open-cds" class="btn btn-secondary" disabled>Ouvrir l'écran client</button>
+        <button id="btn-copy-url" class="btn btn-secondary" disabled>Copier l'URL</button>
+      </div>
+    </section>
+
+    <section class="card update-card">
+      <h2>Mise à jour</h2>
+      <p id="update-version" class="hint">Version installée —</p>
+      <p id="update-status-text" class="update-status-text">Vérification automatique après le démarrage.</p>
+      <div id="update-progress-wrap" class="update-progress-wrap hidden">
+        <div class="update-progress-bar">
+          <div id="update-progress-fill" class="update-progress-fill"></div>
+        </div>
+        <p id="update-progress-label" class="hint"></p>
+      </div>
+      <div class="actions secondary-actions">
+        <button id="btn-update-check" class="btn btn-secondary" type="button">Vérifier</button>
+        <button id="btn-update-download" class="btn btn-secondary hidden" type="button" disabled>Télécharger</button>
+        <button id="btn-update-install" class="btn btn-primary hidden" type="button">Redémarrer pour installer</button>
+      </div>
+    </section>
+
+    <section class="card qr-card">
+      <h2>Scanner pour se connecter</h2>
+      <div id="qr-wrap" class="qr-wrap">
+        <div class="qr-placeholder">En attente du démarrage…</div>
+      </div>
+      <p id="primary-url" class="primary-url"></p>
+      <ul id="all-urls" class="url-list"></ul>
+      <p class="lan-hint">
+        Autres appareils (même Wi‑Fi) : <strong>http://IP:5173</strong>.
+        Si inaccessible, acceptez la demande Windows (UAC) au démarrage pour ouvrir le pare-feu.
+      </p>
+    </section>
+
+    <section class="card qr-card">
+      <h2>Écran client (CDS)</h2>
+      <div id="cds-qr-wrap" class="qr-wrap">
+        <div class="qr-placeholder">En attente du démarrage…</div>
+      </div>
+      <p id="cds-url" class="primary-url"></p>
+      <p class="lan-hint">
+        Affichage public des commandes sur un second écran ou une tablette : <strong>/cds</strong>
+      </p>
+    </section>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.analytics-dashboard-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.analytics-kpis .ant-card {
+  height: 100%;
+}

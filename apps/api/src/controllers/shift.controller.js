@@ -1,0 +1,406 @@
+const { Shift, Payment, User, Establishment } = require('../models');
+const { query, serializers, staffexport } = require('../utils')();
+const { getEstablishmentId } = query;
+const { mapList, serializeShiftCurrent, serializeShiftHistory } = serializers;
+const { canExportStaffReport } = staffexport;
+const { shift, audit, print, reports } = require('../services')();
+const { getWaiterDailyCloseReport } = require('../services/waiter-daily-close');
+const { buildWaiterDailyClosePdf } = reports;
+const {
+  isShiftRole,
+  requiresManualShiftStart,
+  requiresShiftAmounts,
+  getPeriodRange,
+  findActiveShift,
+  resolveEstablishmentForUser,
+} = shift;
+const { logStaffActivity } = audit;
+
+function sendPdf(res, buffer, filename) {
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(buffer);
+}
+
+async function resolveWaiterDailyCloseUser(req, estId) {
+  const requestedUserId = req.query?.user_id || req.body?.user_id;
+  const targetId = requestedUserId || req.user._id;
+
+  if (!canExportStaffReport(req.user, targetId)) {
+    return {
+      error: {
+        status: 403,
+        message: 'Vous ne pouvez consulter que votre propre clôture.',
+      },
+    };
+  }
+
+  if (String(targetId) === String(req.user._id)) {
+    return { user: req.user };
+  }
+
+  const user = await User.findOne({
+    _id: targetId,
+    establishment: estId,
+    is_deleted: false,
+  });
+  if (!user) {
+    return {
+      error: {
+        status: 404,
+        message: 'Utilisateur introuvable.',
+      },
+    };
+  }
+
+  return { user };
+}
+
+async function loadEstablishmentForClose(estId) {
+  return Establishment.findById(estId).select(
+    'name legal_name address phone email patente ice identifiant_fiscal rc currency tax_id_label tax_rate',
+  );
+}
+
+async function getCurrentShift(req, res, next) {
+  try {
+    const roleKey = req.user?.role?.role_key;
+    const establishment = await resolveEstablishmentForUser(req.user);
+    if (!isShiftRole(roleKey)) {
+      return res.json({ success: true, data: { required: false } });
+    }
+    const estId = getEstablishmentId(req);
+    const active = await findActiveShift(req.user._id, estId);
+    const manualStart = requiresManualShiftStart(roleKey, establishment);
+    return res.json({
+      success: true,
+      data: {
+        required: true,
+        manual_start_required: manualStart,
+        auto_shift: !manualStart,
+        requires_amounts: requiresShiftAmounts(roleKey),
+        active_shift: serializeShiftCurrent(active),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function startShift(req, res, next) {
+  try {
+    const roleKey = req.user?.role?.role_key;
+    if (!isShiftRole(roleKey)) {
+      return res.status(400).json({ success: false, message: 'Ce rôle n\'utilise pas les shifts.' });
+    }
+    const estId = getEstablishmentId(req);
+    const existing = await findActiveShift(req.user._id, estId);
+    if (existing) {
+      return res.json({ success: true, data: serializeShiftCurrent(existing), message: 'Shift déjà ouvert.' });
+    }
+
+    const openingAmount = Number(req.body?.opening_amount || 0);
+    if (requiresShiftAmounts(roleKey) && (Number.isNaN(openingAmount) || openingAmount < 0)) {
+      return res.status(400).json({ success: false, message: 'Montant de départ invalide.' });
+    }
+
+    const shift = await Shift.create({
+      user: req.user._id,
+      establishment: estId,
+      opening_amount: requiresShiftAmounts(roleKey) ? openingAmount : 0,
+      source: req.session?.is_pin_session ? 'systempos' : 'manual',
+      source_systempos_session: req.session?.parent_systempos_session || null,
+      role_key: roleKey,
+      notes: req.body?.notes,
+    });
+    req.session.shift = shift._id;
+    await req.session.save();
+
+    await logStaffActivity({
+      establishment: estId,
+      user: req.user,
+      action: 'shift_start',
+      module: 'shifts',
+      resource: 'shift',
+      resource_id: shift._id,
+      description: 'Ouverture de shift',
+      req,
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: serializeShiftCurrent(shift),
+      message: 'Shift ouvert.',
+      meta: {
+        redirect_to_pin: Boolean(req.session?.is_pin_session && ['cook', 'barman'].includes(roleKey)),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function closeShift(req, res, next) {
+  try {
+    const roleKey = req.user?.role?.role_key;
+    if (!isShiftRole(roleKey)) {
+      return res.status(400).json({ success: false, message: 'Ce rôle n\'utilise pas les shifts.' });
+    }
+    const estId = getEstablishmentId(req);
+    const shift = await findActiveShift(req.user._id, estId);
+    if (!shift) {
+      return res.status(404).json({ success: false, message: 'Aucun shift actif.' });
+    }
+
+    const closingAmount = Number(req.body?.closing_amount || 0);
+    if (requiresShiftAmounts(roleKey) && (Number.isNaN(closingAmount) || closingAmount < 0)) {
+      return res.status(400).json({ success: false, message: 'Montant de clôture invalide.' });
+    }
+
+    shift.is_active = false;
+    shift.clock_out = new Date();
+    shift.closed_by_user = req.user._id;
+    shift.notes = req.body?.notes || shift.notes;
+    if (requiresShiftAmounts(roleKey)) shift.closing_amount = closingAmount;
+    await shift.save();
+
+    await logStaffActivity({
+      establishment: estId,
+      user: req.user,
+      action: 'shift_close',
+      module: 'shifts',
+      resource: 'shift',
+      resource_id: shift._id,
+      description: 'Clôture de shift',
+      req,
+    });
+
+    let printResult = null;
+    if (roleKey === 'waiter') {
+      try {
+        const report = await getWaiterDailyCloseReport(estId, req.user);
+        printResult = await print.printWaiterDailyClose(estId, report);
+      } catch (printErr) {
+        printResult = { skipped: true, reason: printErr.message || 'Erreur impression' };
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: serializeShiftHistory(shift),
+      message: 'Shift clôturé.',
+      meta: {
+        daily_close_print: printResult,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function listMyShiftHistory(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const period = req.query?.period || 'month';
+    const page = Math.max(1, Number.parseInt(req.query?.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, Number.parseInt(req.query?.limit, 10) || 10));
+    const { from, to } = getPeriodRange(period, req.query?.date);
+
+    const all = await Shift.find({
+      user: req.user._id,
+      establishment: estId,
+      clock_in: { $gte: from, $lte: to },
+    }).sort({ clock_in: -1 });
+
+    const total = all.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const safePage = Math.min(page, totalPages);
+    const data = all.slice((safePage - 1) * limit, safePage * limit);
+
+    const totalMs = all.reduce((sum, s) => {
+      const end = s.clock_out ? new Date(s.clock_out) : new Date();
+      const start = new Date(s.clock_in);
+      if (Number.isNaN(start.getTime())) return sum;
+      return sum + (end - start);
+    }, 0);
+
+    res.json({
+      success: true,
+      data: mapList(data, serializeShiftHistory),
+      meta: {
+        period,
+        from,
+        to,
+        count: total,
+        page: safePage,
+        limit,
+        total_pages: totalPages,
+        total_hours: Math.round((totalMs / 3600000) * 100) / 100,
+      },
+    });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+}
+
+async function getMyDailySummary(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const period = req.query?.period || 'day';
+    const { from, to } = getPeriodRange(period, req.query?.date);
+
+    const payments = await Payment.find({
+      establishment: estId,
+      processed_by: req.user._id,
+      processed_at: { $gte: from, $lte: to },
+      is_void: false,
+    }).select('amount method processed_at');
+
+    const total = payments.reduce((s, p) => s + (p.amount || 0), 0);
+    const byMethod = payments.reduce((acc, p) => {
+      const key = p.method || 'other';
+      acc[key] = (acc[key] || 0) + (p.amount || 0);
+      return acc;
+    }, {});
+
+    const shifts = await Shift.find({
+      user: req.user._id,
+      establishment: estId,
+      clock_in: { $gte: from, $lte: to },
+    }).select('clock_in clock_out is_active');
+
+    const shiftMs = shifts.reduce((sum, s) => {
+      const end = s.clock_out ? new Date(s.clock_out) : (s.is_active ? new Date() : new Date(s.clock_in));
+      return sum + (end - new Date(s.clock_in));
+    }, 0);
+
+    res.json({
+      success: true,
+      data: {
+        period,
+        from,
+        to,
+        count: payments.length,
+        total,
+        by_method: byMethod,
+        shift_count: shifts.length,
+        shift_hours: Math.round((shiftMs / 3600000) * 100) / 100,
+      },
+    });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+}
+
+async function getWaiterDailyClose(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const resolved = await resolveWaiterDailyCloseUser(req, estId);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({
+        success: false,
+        message: resolved.error.message,
+      });
+    }
+
+    const data = await getWaiterDailyCloseReport(
+      estId,
+      resolved.user,
+      req.query?.date,
+    );
+    res.json({ success: true, data });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+}
+
+async function printWaiterDailyClose(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const resolved = await resolveWaiterDailyCloseUser(req, estId);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({
+        success: false,
+        message: resolved.error.message,
+      });
+    }
+
+    const report = await getWaiterDailyCloseReport(
+      estId,
+      resolved.user,
+      req.body?.date || req.query?.date,
+    );
+    const result = await print.printWaiterDailyClose(estId, report);
+    if (result.skipped) {
+      return res.status(400).json({
+        success: false,
+        message: result.reason || 'Impression impossible.',
+      });
+    }
+    res.json({ success: true, data: result, message: 'Rapport imprimé sur la caisse.' });
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+}
+
+async function exportWaiterDailyClosePdf(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const resolved = await resolveWaiterDailyCloseUser(req, estId);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({
+        success: false,
+        message: resolved.error.message,
+      });
+    }
+
+    const establishment = await loadEstablishmentForClose(estId);
+    const report = await getWaiterDailyCloseReport(
+      estId,
+      resolved.user,
+      req.query?.date,
+    );
+    const buffer = await buildWaiterDailyClosePdf(establishment, report);
+    const dateSafe = (req.query?.date || new Date().toISOString().slice(0, 10)).replace(/[^\d-]/g, '');
+    const waiterSlug = (report.waiter?.fullname || 'serveur').replace(/[^\w.-]+/g, '-').slice(0, 40);
+    sendPdf(res, buffer, `cloture-jour-${waiterSlug}-${dateSafe}.pdf`);
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+}
+
+async function getMyWaiterDailyClose(req, res, next) {
+  return getWaiterDailyClose(req, res, next);
+}
+
+async function printMyWaiterDailyClose(req, res, next) {
+  return printWaiterDailyClose(req, res, next);
+}
+
+module.exports = {
+  getCurrentShift,
+  startShift,
+  closeShift,
+  listMyShiftHistory,
+  getMyDailySummary,
+  getMyWaiterDailyClose,
+  printMyWaiterDailyClose,
+  getWaiterDailyClose,
+  printWaiterDailyClose,
+  exportWaiterDailyClosePdf,
+};
