@@ -231,6 +231,22 @@ async function getActiveLicenseRecord(fingerprint = getMachineFingerprint()) {
 
 async function getLicenseStatus() {
   const fingerprint = getMachineFingerprint();
+
+  if (config.localPos) {
+    return {
+      valid: true,
+      fingerprint,
+      period: 'local',
+      period_label: 'Installation locale',
+      lifetime: true,
+      days_remaining: null,
+      expires_at: null,
+      code: 'LICENSE_LOCAL_POS',
+      message: 'Licence non requise (POS local).',
+      local_pos: true,
+    };
+  }
+
   const record = await getActiveLicenseRecord(fingerprint);
 
   if (!record?.license_token) {

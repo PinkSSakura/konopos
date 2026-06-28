@@ -23,7 +23,7 @@ export default function LicenseSidebarStatus({ collapsed = false }) {
       ? '/admin/license-info'
       : null;
 
-  if (!valid || !status) return null;
+  if (!valid || !status || status.local_pos) return null;
 
   const statusLabel = getLicenseStatusLabel(status);
   const subtitle = status.lifetime && status.valid

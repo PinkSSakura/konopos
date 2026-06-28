@@ -27,6 +27,10 @@ const config = {
   defaultMainColor: '#fc2c46',
   defaultSecondaryColor: '#f5f5f5',
   defaultCurrency: 'MAD',
+  /** POS local embarqué (Electron) — pas de licence machine requise */
+  localPos:
+    process.env.KONOPOS_LOCAL_POS === '1'
+    || process.env.KONOPOS_LOCAL_POS === 'true',
 };
 
 module.exports = config;

@@ -1,6 +1,6 @@
 {
   "name": "@konopos/electron-desktop",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "KonoPOS desktop — POS local café & restaurant",
   "author": "KonoPOS",
   "main": "main.js",

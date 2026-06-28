@@ -1,6 +1,11 @@
 const { license: licenseService } = require('../services')();
+const config = require('../config');
 
 module.exports = async function requireValidLicense(req, res, next) {
+  if (config.localPos) {
+    return next();
+  }
+
   try {
     const status = await licenseService.getLicenseStatus();
     if (status.valid) {
