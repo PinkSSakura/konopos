@@ -53,7 +53,7 @@ import {
   getKitchenDashboardPath,
   isKitchenStaffRole,
 } from '../../utils/kdsaccess';
-import { canViewOwnShift, canViewWaiterDailyClose } from '../../utils/shiftAccess';
+import { canViewOwnShift, canViewWaiterDailyClose, canManageShifts } from '../../utils/shiftAccess';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -154,6 +154,9 @@ export default function AppLayout() {
     }
     if (canViewWaiterDailyClose(user)) {
       items.push(navItem('/shift/daily-close', ClipboardCheck, 'Clôture jour', tryNavigate));
+    }
+    if (canManageShifts(user)) {
+      items.push(navItem('/admin/shifts/manage', Clock3, 'Shifts équipe', tryNavigate));
     }
   }
 

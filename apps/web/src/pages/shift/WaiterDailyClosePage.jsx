@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { message } from '@/lib/toast';
 import client from '../../api/client';
@@ -92,6 +93,7 @@ function ItemDetailTable({ title, rows, currency, emptyLabel }) {
 
 export default function WaiterDailyClosePage() {
   const { user, loading: authLoading } = useAuth();
+  const [searchParams] = useSearchParams();
   const [dateStr, setDateStr] = useState(todayDateString());
   const [targetUserId, setTargetUserId] = useState('');
   const [waiters, setWaiters] = useState([]);
@@ -118,6 +120,13 @@ export default function WaiterDailyClosePage() {
       setLoadingWaiters(false);
     }
   }, [canSelectTarget]);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get('user_id');
+    if (fromUrl && canSelectTarget) {
+      setTargetUserId(fromUrl);
+    }
+  }, [searchParams, canSelectTarget]);
 
   useEffect(() => {
     if (!canSelectTarget || loadingWaiters) return;

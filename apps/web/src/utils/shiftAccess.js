@@ -38,3 +38,7 @@ export function canDeleteShiftPlan(user) {
 export function canAccessShiftAdmin(user) {
   return hasAnyPermission(user, ['shift_view_all', 'shift_plan_view']);
 }
+
+export function canManageShifts(user) {
+  return hasPermission(user, 'shift_manage');
+}

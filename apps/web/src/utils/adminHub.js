@@ -2,6 +2,7 @@ import {
   Store,
   Settings,
   CalendarDays,
+  Clock3,
   ShieldCheck,
   Users,
   Wallet,
@@ -16,7 +17,7 @@ import { canManageExpenses } from './expenseAccess';
 import { canExportTeamStaffReports } from './staffReportAccess';
 import { canViewStaffActivity } from './activityAccess';
 import { canViewCustomers } from './customerAccess';
-import { canAccessShiftAdmin } from './shiftAccess';
+import { canAccessShiftAdmin, canManageShifts } from './shiftAccess';
 import { canAccessConnectedUsers } from './sessionAccess';
 import {
   hasAnyPermission,
@@ -65,12 +66,22 @@ export function getAdminHubCards(user) {
     });
   }
 
+  if (canManageShifts(user)) {
+    cards.push({
+      key: 'shift-manage',
+      path: '/admin/shifts/manage',
+      title: 'Shifts en service',
+      description: 'Ouvrir et clôturer les shifts serveurs en cours.',
+      icon: Clock3,
+    });
+  }
+
   if (canAccessShiftAdmin(user)) {
     cards.push({
       key: 'shifts',
       path: '/admin/shifts',
       title: 'Planning shifts',
-      description: 'Horaires et plannings de l\'équipe.',
+      description: 'Calendrier prévisionnel des horaires.',
       icon: CalendarDays,
     });
   }

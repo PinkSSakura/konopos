@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { message } from '@/lib/toast';
 import client from '../../api/client';
@@ -25,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Card,
   CardContent,
@@ -218,6 +220,18 @@ export default function ShiftAdminPage() {
 
   return (
     <div className="flex w-full flex-col gap-6">
+      <Alert>
+        <AlertTitle>Planning prévisionnel</AlertTitle>
+        <AlertDescription>
+          Ce calendrier sert à planifier les créneaux. Pour ouvrir ou fermer un shift en service
+          (commandes, clôture du jour), utilisez{' '}
+          <Link to="/admin/shifts/manage" className="font-medium underline">
+            Shifts en service
+          </Link>
+          .
+        </AlertDescription>
+      </Alert>
+
       {showPlans && (
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">

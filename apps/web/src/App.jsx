@@ -32,6 +32,8 @@ import UsersPage from './pages/admin/UsersPage';
 import UserFormPage from './pages/admin/UserFormPage';
 import ShiftAdminPage from './pages/admin/ShiftAdminPage';
 import ShiftAdminRoute from './components/ShiftAdminRoute';
+import ShiftManagePage from './pages/admin/ShiftManagePage';
+import ShiftManageRoute from './components/ShiftManageRoute';
 import ShiftRoute from './components/ShiftRoute';
 import RolesPermissionsPage from './pages/admin/RolesPermissionsPage';
 import LicensePage from './pages/admin/LicensePage';
@@ -241,6 +243,14 @@ function App() {
                                 <ShiftAdminRoute>
                                     <ShiftAdminPage />
                                 </ShiftAdminRoute>
+                            )}
+                        />
+                        <Route
+                            path="admin/shifts/manage"
+                            element={(
+                                <ShiftManageRoute>
+                                    <ShiftManagePage />
+                                </ShiftManageRoute>
                             )}
                         />
 
