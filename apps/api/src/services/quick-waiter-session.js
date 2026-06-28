@@ -1,4 +1,5 @@
 const config = require('../config');
+const { PIN_ROLES } = require('../constants/auth');
 const { User, UserSession, Shift, Establishment } = require('../models');
 const { getSingleEstablishment } = require('./cds');
 const { clearAuthCookie } = require('../utils/authcookie');
@@ -16,6 +17,18 @@ async function establishmentHasSystempos(establishmentId) {
   return users.length > 0;
 }
 
+async function establishmentHasPinUsers(establishmentId) {
+  if (!establishmentId) return false;
+  const estId = String(establishmentId);
+  const users = await User.find({
+    establishment: estId,
+    is_deleted: false,
+    is_active: true,
+    status: 'actif',
+  }).populate('role');
+  return users.some((user) => user.pin && PIN_ROLES.includes(user.role?.role_key));
+}
+
 async function getPinLoginOptions() {
   const establishment = await getSingleEstablishment();
   if (!establishment) {
@@ -27,8 +40,9 @@ async function getPinLoginOptions() {
   }
   const hasSystempos = await establishmentHasSystempos(establishment._id);
   const waiterQuickPinMode = Boolean(establishment.waiter_quick_pin_mode);
+  const hasPinUsers = await establishmentHasPinUsers(establishment._id);
   return {
-    pin_login_available: waiterQuickPinMode || !hasSystempos,
+    pin_login_available: waiterQuickPinMode || !hasSystempos || hasPinUsers,
     waiter_quick_pin_mode: waiterQuickPinMode,
     has_systempos: hasSystempos,
   };

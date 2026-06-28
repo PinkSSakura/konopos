@@ -99,14 +99,24 @@ function serveStatic(req, res) {
           res.end('Not found');
           return;
         }
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          ...(process.env.KONOPOS_STATIC_NO_CACHE === '1'
+            ? { 'Cache-Control': 'no-store, no-cache, must-revalidate', Pragma: 'no-cache' }
+            : {}),
+        });
         res.end(data);
       });
       return;
     }
 
     const ext = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+    const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' };
+    if (process.env.KONOPOS_STATIC_NO_CACHE === '1') {
+      headers['Cache-Control'] = 'no-store, no-cache, must-revalidate';
+      headers.Pragma = 'no-cache';
+    }
+    res.writeHead(200, headers);
     fs.createReadStream(filePath).pipe(res);
   });
 }

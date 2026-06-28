@@ -3,8 +3,8 @@ import { toast } from 'sonner';
 export function registerPwa() {
   if (!('serviceWorker' in navigator)) return;
 
-  // Electron POS window — unregister SW to avoid stale cached bundles (blank pages).
-  if (window.konoPosShell) {
+  // Electron — never cache the POS UI with a service worker (stale bundles after updates).
+  if (window.konoPosShell || /\bElectron\b/i.test(navigator.userAgent)) {
     navigator.serviceWorker.getRegistrations().then((regs) => {
       regs.forEach((reg) => reg.unregister());
     }).catch(() => {});
