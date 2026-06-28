@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
+const { getDefaultDatabasePath } = require('./database-path');
 const {
   ensureSchema,
   migrateLegacyDocuments,
@@ -28,8 +29,7 @@ function resolveDatabasePath(filePath) {
 
 function getDatabasePath() {
   if (config.sqlitePath) return resolveDatabasePath(config.sqlitePath);
-  const dataDir = process.env.TouDev_DATA_DIR || path.join(__dirname, '..', '..', 'data');
-  return path.join(dataDir, 'TouDev.sqlite3');
+  return getDefaultDatabasePath();
 }
 
 function applyJournalMode(connection) {

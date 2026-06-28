@@ -5,8 +5,8 @@
  *   TouDev_GH_REPO=TouDev
  *   GH_TOKEN=...  (Contents write — publish from your machine only)
  */
-const GITHUB_OWNER = process.env.TouDev_GH_OWNER || 'PinkSSakura';
-const GITHUB_REPO = process.env.TouDev_GH_REPO || 'TouDev';
+const GITHUB_OWNER = process.env.TouDev_GH_OWNER || process.env.KONOPOS_GH_OWNER || 'PinkSSakura';
+const GITHUB_REPO = process.env.TouDev_GH_REPO || process.env.KONOPOS_GH_REPO || 'konopos';
 const GITHUB_PRIVATE = false;
 
 let GITHUB_UPDATE_TOKEN = '';

@@ -27,10 +27,6 @@ const config = {
   defaultMainColor: '#c2462d',
   defaultSecondaryColor: '#f5f5f5',
   defaultCurrency: 'MAD',
-  /** POS local embarqué (Electron) — pas de licence machine requise */
-  localPos:
-    process.env.TouDev_LOCAL_POS === '1'
-    || process.env.TouDev_LOCAL_POS === 'true',
 };
 
 module.exports = config;

@@ -1,7 +1,5 @@
-import { hasPermission } from './permissions';
-
 export function canViewLicense(user) {
-  return hasPermission(user, 'license_view');
+  return user?.role?.role_key === 'superadmin';
 }
 
 export const canViewLicenseInfo = canViewLicense;

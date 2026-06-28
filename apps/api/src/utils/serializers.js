@@ -406,7 +406,6 @@ function serializeLicenseStatusPublic(status) {
   };
   if (status.period) out.period = status.period;
   if (status.period_label) out.period_label = status.period_label;
-  if (status.local_pos) out.local_pos = true;
   return out;
 }
 

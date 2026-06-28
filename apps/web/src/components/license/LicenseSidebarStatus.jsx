@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { KeyRound } from 'lucide-react';
 import { useLicense } from '../../context/LicenseContext';
 import { useAuth } from '../../context/AuthContext';
-import { canViewLicenseInfo } from '../../utils/licenseAccess';
 import { getLicenseStatusLabel } from '../../utils/licenseDisplay';
 import useLicenseCountdown from '../../hooks/useLicenseCountdown';
 import { Badge } from '@/components/ui/badge';
@@ -15,16 +14,10 @@ export default function LicenseSidebarStatus({ collapsed = false }) {
   const navigate = useNavigate();
   const { countdown } = useLicenseCountdown(status);
 
-  const roleKey = user?.role?.role_key;
-  const isSuperAdmin = roleKey === 'superadmin';
-  const detailPath = isSuperAdmin
-    ? '/admin/license'
-    : canViewLicenseInfo(user)
-      ? '/admin/license-info'
-      : null;
+  const isSuperAdmin = user?.role?.role_key === 'superadmin';
+  if (!isSuperAdmin || !status) return null;
 
-  if (!valid || !status || status.local_pos) return null;
-
+  const detailPath = '/admin/license';
   const statusLabel = getLicenseStatusLabel(status);
   const subtitle = status.lifetime && status.valid
     ? statusLabel
@@ -55,10 +48,10 @@ export default function LicenseSidebarStatus({ collapsed = false }) {
           </div>
           <div className="app-sider-license__meta">
             <Badge
-              variant={status.valid ? 'secondary' : 'destructive'}
+              variant={valid ? 'secondary' : 'destructive'}
               className="app-sider-license__badge"
             >
-              {status.valid ? 'Active' : 'Expirée'}
+              {valid ? 'Active' : 'Expirée'}
             </Badge>
             {!status.lifetime && countdown ? (
               <span className="app-sider-license__countdown">{countdown}</span>

@@ -9,8 +9,8 @@ const { loadPublishEnv } = require('./load-publish-env');
 
 loadPublishEnv();
 
-const owner = process.env.TouDev_GH_OWNER || 'PinkSSakura';
-const repo = process.env.TouDev_GH_REPO || 'TouDev';
+const owner = process.env.TouDev_GH_OWNER || process.env.KONOPOS_GH_OWNER || 'PinkSSakura';
+const repo = process.env.TouDev_GH_REPO || process.env.KONOPOS_GH_REPO || 'konopos';
 const token = process.env.GH_TOKEN;
 const version = process.argv.find((a) => /^\d+\.\d+\.\d+$/.test(a)) || require('../package.json').version;
 const forceReplace = process.argv.includes('--force');
@@ -130,7 +130,7 @@ async function main() {
     release = await api('POST', `/repos/${owner}/${repo}/releases`, {
       tag_name: tag,
       name: `TouDev ${version}`,
-      body: `TouDev ${version} — silent in-app upgrade install.`,
+      body: `TouDev ${version} — licence machine obligatoire, UI licence réservée au superadmin, base konopos.sqlite3.`,
       draft: false,
       prerelease: false,
     });

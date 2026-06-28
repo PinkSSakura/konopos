@@ -3,6 +3,7 @@ const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
 const config = require('../config');
+const { getDefaultDatabasePath, DB_NAMES } = require('./database-path');
 
 function resolveDatabasePath(filePath) {
   if (!filePath || path.isAbsolute(filePath)) return filePath;
@@ -11,8 +12,7 @@ function resolveDatabasePath(filePath) {
 
 function getDatabasePath() {
   if (config.sqlitePath) return resolveDatabasePath(config.sqlitePath);
-  const dataDir = process.env.TouDev_DATA_DIR || path.join(__dirname, '..', '..', 'data');
-  return path.join(dataDir, 'TouDev.sqlite3');
+  return getDefaultDatabasePath();
 }
 
 function isDesktopPos() {
@@ -29,8 +29,16 @@ function backupTimestamp() {
 }
 
 function sqlitePaths(dataDir) {
-  const dbPath = path.join(dataDir, 'TouDev.sqlite3');
-  return [dbPath, `${dbPath}-wal`, `${dbPath}-shm`].filter((filePath) => fs.existsSync(filePath));
+  const dbPath = getDatabasePath();
+  const baseName = path.basename(dbPath);
+  const dir = path.dirname(dbPath);
+  const candidates = DB_NAMES.includes(baseName)
+    ? [path.join(dir, baseName)]
+    : DB_NAMES.map((name) => path.join(dataDir, name));
+  const paths = candidates.filter((filePath) => fs.existsSync(filePath));
+  const resolved = paths.length ? paths : [dbPath];
+  return resolved.flatMap((filePath) => [filePath, `${filePath}-wal`, `${filePath}-shm`]
+    .filter((entry) => fs.existsSync(entry)));
 }
 
 function copySqliteFiles(dataDir, destDir) {
@@ -100,15 +108,23 @@ function restoreDataBackup(backupDir, dataDir) {
     throw new Error(`Sauvegarde introuvable : ${backupDir}`);
   }
 
-  for (const fileName of ['TouDev.sqlite3', 'TouDev.sqlite3-wal', 'TouDev.sqlite3-shm']) {
-    const src = path.join(backupDir, fileName);
-    const dest = path.join(dataDir, fileName);
-    if (fs.existsSync(src)) {
-      fs.copyFileSync(src, dest);
-      continue;
-    }
-    if (fs.existsSync(dest)) {
-      fs.rmSync(dest, { force: true });
+  const dbPath = getDatabasePath();
+  const dbBase = path.basename(dbPath);
+  const dbDir = path.dirname(dbPath);
+  const legacyNames = [...new Set([dbBase, ...DB_NAMES])];
+
+  for (const baseName of legacyNames) {
+    for (const suffix of ['', '-wal', '-shm']) {
+      const fileName = `${baseName}${suffix}`;
+      const src = path.join(backupDir, fileName);
+      const dest = path.join(dbDir, fileName);
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, dest);
+        continue;
+      }
+      if (fs.existsSync(dest)) {
+        fs.rmSync(dest, { force: true });
+      }
     }
   }
 

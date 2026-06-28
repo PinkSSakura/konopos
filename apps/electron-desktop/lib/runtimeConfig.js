@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getProjectRoot } = require('./projectRoot');
+const { findExistingDatabase, legacyKonoPosDataDir } = require('../../api/src/db/database-path');
 
 function isPackaged() {
   try {
@@ -33,7 +34,8 @@ function ensureApiEnv() {
       'PORT=5000',
       'HOST=0.0.0.0',
       'TouDev_LOCAL_POS=1',
-      '# Base SQLite locale (laisser vide pour utiliser TouDev_DATA_DIR/TouDev.sqlite3) :',
+      '# TouDev_LOCAL_POS=1 autorise les cookies auth en HTTP local (pas de contournement licence).',
+      '# Base SQLite locale (laisser vide : détection auto konopos.sqlite3) :',
       'SQLITE_PATH=',
       'JWT_SECRET=change-me-in-production-use-long-random-string',
       'ALLOW_LAN_CORS=true',
@@ -57,17 +59,25 @@ function ensureDataDir() {
   return dataDir;
 }
 
+function resolvePackagedSqlitePath(dataDir) {
+  const existing = findExistingDatabase([dataDir, legacyKonoPosDataDir()]);
+  return existing || path.join(dataDir, 'konopos.sqlite3');
+}
+
 function getBackendEnv() {
-  const localPos = { TouDev_LOCAL_POS: '1' };
+  const desktopEnv = { TouDev_LOCAL_POS: '1' };
 
   if (!isPackaged()) {
-    return localPos;
+    return desktopEnv;
   }
 
+  const dataDir = ensureDataDir();
+
   return {
-    ...localPos,
+    ...desktopEnv,
     TouDev_ENV_FILE: ensureApiEnv(),
-    TouDev_DATA_DIR: ensureDataDir(),
+    TouDev_DATA_DIR: dataDir,
+    SQLITE_PATH: resolvePackagedSqlitePath(dataDir),
   };
 }
 
