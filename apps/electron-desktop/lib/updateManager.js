@@ -160,7 +160,7 @@ async function downloadUpdate() {
 
 function quitAndInstall() {
   if (!packaged) return false;
-  autoUpdater.quitAndInstall(true, true);
+  autoUpdater.quitAndInstall(false, true);
   return true;
 }
 

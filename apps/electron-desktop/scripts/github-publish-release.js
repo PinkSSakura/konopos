@@ -12,7 +12,8 @@ loadPublishEnv();
 const owner = process.env.KONOPOS_GH_OWNER || 'PinkSSakura';
 const repo = process.env.KONOPOS_GH_REPO || 'konopos';
 const token = process.env.GH_TOKEN;
-const version = process.argv[2] || require('../package.json').version;
+const version = process.argv.find((a) => /^\d+\.\d+\.\d+$/.test(a)) || require('../package.json').version;
+const forceReplace = process.argv.includes('--force');
 const tag = `v${version}`;
 const releaseBuild = path.join(__dirname, '..', '..', '..', 'release-build');
 const exeName = `KonoPOS-Setup-${version}.exe`;
@@ -146,8 +147,13 @@ async function main() {
   for (const [filePath, name] of assets) {
     if (!fs.existsSync(filePath)) throw new Error(`Missing ${filePath}`);
     if (existing.has(name)) {
-      console.log(`Skip ${name} (already on release)`);
-      continue;
+      if (!forceReplace) {
+        console.log(`Skip ${name} (already on release)`);
+        continue;
+      }
+      const asset = existing.get(name);
+      await api('DELETE', `/repos/${owner}/${repo}/releases/assets/${asset.id}`);
+      console.log(`Deleted existing ${name}`);
     }
     await uploadAsset(release.id, filePath, name);
   }
