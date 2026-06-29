@@ -5,13 +5,14 @@ import { useEstablishment } from '../context/EstablishmentContext';
 import { useLicense } from '../context/LicenseContext';
 import { useShift } from '../context/ShiftContext';
 import { getHomeRoute } from '../utils/homeRoute';
+import { getWaiterHomeRoute, shouldEnforceShiftGate } from '../utils/shiftGate';
 import { InlineLoading } from './loading/LoadingStates';
 
 export default function DefaultHomeRedirect() {
   const { user, loading: authLoading, isPinSession: isPin } = useAuth();
   const { valid: licenseValid, loading: licenseLoading } = useLicense();
   const { hasEstablishment, loading: establishmentLoading } = useEstablishment();
-  const { isShiftGated } = useShift();
+  const { isShiftGated, activeShift, loading: shiftLoading } = useShift();
   const roleKey = user?.role?.role_key;
 
   if (roleKey === 'systempos' && !isPin) {
@@ -29,6 +30,14 @@ export default function DefaultHomeRedirect() {
     if (!hasEstablishment) {
       return <Navigate to="/admin/establishment" replace />;
     }
+  }
+
+  if (shouldEnforceShiftGate(user) && shiftLoading) {
+    return <InlineLoading label="Chargement shift…" />;
+  }
+
+  if (roleKey === 'waiter') {
+    return <Navigate to={getWaiterHomeRoute(activeShift)} replace />;
   }
 
   if (isShiftGated) {

@@ -254,9 +254,10 @@ export default function ShiftPage() {
   );
   const dailyCloseOrders = dailyClose?.orders || {};
   const dailyCloseItems = dailyClose?.items || {};
+  const dailyCloseCurrency = dailyClose?.currency || 'MAD';
 
+  const showWaiterAdminGate = roleKey === 'waiter' && !activeShift;
   const showStartForm = manualStartRequired && !activeShift && roleKey !== 'waiter';
-  const showWaiterAdminGate = manualStartRequired && !activeShift && roleKey === 'waiter';
   const showCloseForm = Boolean(activeShift) && manualStartRequired;
 
   const periodToggle = (

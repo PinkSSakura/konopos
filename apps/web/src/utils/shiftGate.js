@@ -1,17 +1,24 @@
-import { canViewAnalytics } from './analyticsAccess';
 import { canViewPaymentHistory } from './paymentAccess';
 import { getKitchenDashboardPath } from './kdsaccess';
-import { hasCaisseHubAccess } from './caisseHub';
 
-/** Routes / menu keys accessible without an open shift (manual mode). */
+export function shouldEnforceShiftGate(user) {
+  return user?.role?.role_key === 'waiter';
+}
+
+/** Routes accessible without an open waiter shift. */
 export function getShiftGateAllowedKeys(user) {
   const roleKey = user?.role?.role_key;
-  const keys = ['/shift', '/shift/daily-close', '/orders'];
-  if (canViewPaymentHistory(user)) {
-    keys.push('/caisse/history', '/caisse');
+  const keys = ['/shift', '/shift/daily-close'];
+
+  if (roleKey === 'waiter') {
+    if (canViewPaymentHistory(user)) {
+      keys.push('/caisse/history');
+    }
+    return keys;
   }
-  if (canViewAnalytics(user)) {
-    keys.push('/dashboard');
+
+  if (canViewPaymentHistory(user)) {
+    keys.push('/caisse/history');
   }
   return keys;
 }
@@ -31,12 +38,13 @@ export function filterNavForShiftGate(navItems, user) {
         if (!children.length) return null;
         return { ...item, children };
       }
-      if (item.key === '/caisse') {
-        return hasCaisseHubAccess(user) && allowed.includes('/caisse') ? item : null;
-      }
       return allowed.includes(item.key) ? item : null;
     })
     .filter(Boolean);
+}
+
+export function getWaiterHomeRoute(activeShift) {
+  return activeShift ? '/pos' : '/shift';
 }
 
 export function getPostShiftStartRoute(roleKey) {

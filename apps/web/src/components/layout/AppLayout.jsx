@@ -21,7 +21,7 @@ import useIsMobile from '../../hooks/useIsMobile';
 import EstablishmentRequiredGate, { EstablishmentSetupBanner } from '../EstablishmentRequiredGate';
 import { useAuth } from '../../context/AuthContext';
 import { useShift } from '../../context/ShiftContext';
-import { filterNavForShiftGate } from '../../utils/shiftGate';
+import { filterNavForShiftGate, shouldEnforceShiftGate } from '../../utils/shiftGate';
 import AppWordmark from '../AppWordmark';
 import AppLogo from '../AppLogo';
 import { usePosCart } from '../../context/PosCartContext';
@@ -33,6 +33,7 @@ import NotificationBell from '../notifications/NotificationBell';
 import PinSessionBanner from '../auth/PinSessionBanner';
 import LicenseRequiredGate from '../LicenseRequiredGate';
 import LicenseSidebarStatus from '../license/LicenseSidebarStatus';
+import { canViewPaymentHistory } from '../../utils/paymentAccess';
 import { canViewCustomers } from '../../utils/customerAccess';
 import { canViewAnalytics } from '../../utils/analyticsAccess';
 import { getAdminHubCards, hasAdminHubAccess } from '../../utils/adminHub';
@@ -40,6 +41,7 @@ import { getCaisseHubCards, hasCaisseHubAccess } from '../../utils/caisseHub';
 import { resolveHubSection } from '../../utils/hubSections';
 import HubSubNav from './HubSubNav';
 import MobileBottomNav from './MobileBottomNav';
+import ShiftGateOutlet from '../ShiftGateOutlet';
 import PageErrorBoundary from '../errors/PageErrorBoundary';
 import { MENU_HUB_SECTIONS } from '../../utils/menuHub';
 import {
@@ -161,7 +163,12 @@ export default function AppLayout() {
   }
 
   if (hasCaisseHubAccess(user)) {
-    items.push(navItem('/caisse', Wallet, 'Caisse', tryNavigate));
+    if (canViewPaymentHistory(user)) {
+      items.push(navItem('/caisse/history', Wallet, 'Historique paiements', tryNavigate));
+    }
+    if (!shouldEnforceShiftGate(user) || !isShiftGated) {
+      items.push(navItem('/caisse', Wallet, 'Caisse', tryNavigate));
+    }
   }
 
   if (hasPermission(user, 'order_view') && canAccess(roleKey, ['waiter', 'manager', 'submanager', 'superadmin', 'owner', 'systempos'])) {
@@ -190,7 +197,7 @@ export default function AppLayout() {
   }
 
   return items;
-  }, [user, roleKey, tablesEnabled, tryNavigate]);
+  }, [user, roleKey, tablesEnabled, tryNavigate, isShiftGated]);
 
   const adminCardPaths = useMemo(
     () => getAdminHubCards(user).map((card) => card.path),
@@ -396,7 +403,7 @@ export default function AppLayout() {
                 />
               ) : null}
               <PageErrorBoundary>
-                <Outlet />
+                <ShiftGateOutlet />
               </PageErrorBoundary>
             </div>
           </EstablishmentRequiredGate>

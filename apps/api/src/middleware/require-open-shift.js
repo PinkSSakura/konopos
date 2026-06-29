@@ -1,13 +1,15 @@
 const { query } = require('../utils')();
 const { getEstablishmentId } = query;
 const { shift } = require('../services')();
-const { requiresManualShiftStart, findActiveShift, resolveEstablishmentForUser } = shift;
+const { requiresManualShiftStart, findActiveShift, resolveEstablishmentForUser, waiterRequiresOpenShift } = shift;
 
 async function requireOpenShift(req, res, next) {
   try {
     const roleKey = req.user?.role?.role_key;
     const establishment = await resolveEstablishmentForUser(req.user);
-    if (!requiresManualShiftStart(roleKey, establishment)) return next();
+    const mustHaveShift = waiterRequiresOpenShift(roleKey)
+      || requiresManualShiftStart(roleKey, establishment);
+    if (!mustHaveShift) return next();
 
     const estId = getEstablishmentId(req);
     const active = await findActiveShift(req.user._id, estId);

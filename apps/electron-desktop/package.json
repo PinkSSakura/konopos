@@ -1,6 +1,6 @@
 {
   "name": "@konopos/electron-desktop",
-  "version": "3.4.9",
+  "version": "3.5.1",
   "description": "TouDev desktop — POS local café & restaurant",
   "author": "TouDev",
   "main": "main.js",

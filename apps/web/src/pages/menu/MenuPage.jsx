@@ -1,15 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import client from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import { PageShell } from '../../components/layout/PageShell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MENU_HUB_SECTIONS } from '../../utils/menuHub';
+import { canViewMenuSection } from '../../utils/menuPermissions';
 
 export default function MenuPage() {
+  const { user } = useAuth();
   const [counts, setCounts] = useState(null);
+
+  const sections = useMemo(
+    () => MENU_HUB_SECTIONS.filter((section) => canViewMenuSection(user, section.key)),
+    [user],
+  );
 
   useEffect(() => {
     client.get('/menu/counts')
@@ -23,7 +31,7 @@ export default function MenuPage() {
       subtitle="Gérez catégories, sous-catégories, extras et articles."
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {MENU_HUB_SECTIONS.map((item) => {
+        {sections.map((item) => {
           const Icon = item.icon;
           const count = counts?.[item.countKey];
 

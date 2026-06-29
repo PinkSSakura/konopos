@@ -84,6 +84,7 @@ async function getCurrentShift(req, res, next) {
       data: {
         required: true,
         manual_start_required: manualStart,
+        admin_shift_required: roleKey === 'waiter',
         auto_shift: !manualStart,
         requires_amounts: requiresShiftAmounts(roleKey),
         active_shift: serializeShiftCurrent(active),

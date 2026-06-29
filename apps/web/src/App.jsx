@@ -62,6 +62,7 @@ import ConnectedUsersRoute from './components/ConnectedUsersRoute';
 import AuditLogPage from './pages/admin/AuditLogPage';
 import BackupPage from './pages/admin/BackupPage';
 import DefaultHomeRedirect from './components/DefaultHomeRedirect';
+import PostPinRedirect from './components/PostPinRedirect';
 import CdsPage from './pages/cds/CdsPage';
 
 function App() {
@@ -105,9 +106,9 @@ function App() {
                             ) : !isAuthenticated && isSystemTerminalContext() ? (
                                 <PinLoginPage />
                             ) : isPinSession ? (
-                                <Navigate to="/pos" replace />
+                                <PostPinRedirect />
                             ) : roleKey !== 'systempos' ? (
-                                <Navigate to="/pos" replace />
+                                <PostPinRedirect />
                             ) : (
                                 <PinLoginPage />
                             )

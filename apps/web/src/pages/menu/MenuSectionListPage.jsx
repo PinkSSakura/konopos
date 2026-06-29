@@ -9,6 +9,12 @@ import { PageShell } from '../../components/layout/PageShell';
 import PagePrimaryButton from '../../components/layout/PagePrimaryButton';
 import { Badge } from '@/components/ui/badge';
 import { getMenuSection } from '../../utils/menuHub';
+import {
+  canCreateMenuSection,
+  canDeleteMenuSection,
+  canUpdateMenuSection,
+} from '../../utils/menuPermissions';
+import { useAuth } from '../../context/AuthContext';
 import { MenuSectionPanel } from './menuListShared';
 
 const SECTION_ENDPOINTS = {
@@ -20,6 +26,7 @@ const SECTION_ENDPOINTS = {
 
 export default function MenuSectionListPage() {
   const { section: sectionKey } = useParams();
+  const { user } = useAuth();
   const sectionMeta = getMenuSection(sectionKey);
   const [rows, setRows] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -58,70 +65,82 @@ export default function MenuSectionListPage() {
 
   const getRowActions = useCallback((row) => {
     if (!sectionMeta) return [];
+    const canEdit = canUpdateMenuSection(user, sectionMeta.key);
+    const canDelete = canDeleteMenuSection(user, sectionMeta.key);
 
     if (sectionMeta.key === 'categories') {
-      return [
-        {
+      const actions = [];
+      if (canEdit) {
+        actions.push({
           key: 'edit',
           label: 'Modifier',
           link: `/menu/categories/${row._id}/edit`,
-        },
-        {
+        });
+      }
+      if (canDelete) {
+        actions.push({
           key: 'delete',
           label: 'Supprimer',
           danger: true,
           confirm: 'Supprimer cette catégorie ?',
           onClick: () => client.delete(`/menu/categories/${row._id}`).then(load),
-        },
-      ];
+        });
+      }
+      return actions;
     }
 
     if (sectionMeta.key === 'subcategories') {
-      return [
-        {
-          key: 'edit',
-          label: 'Modifier',
-          link: `/menu/subcategories/${row._id}/edit`,
-        },
-      ];
+      return canEdit ? [{
+        key: 'edit',
+        label: 'Modifier',
+        link: `/menu/subcategories/${row._id}/edit`,
+      }] : [];
     }
 
     if (sectionMeta.key === 'items') {
-      return [
-        {
+      const actions = [];
+      if (canEdit) {
+        actions.push({
           key: 'edit',
           label: 'Modifier',
           link: `/menu/items/${row._id}/edit`,
-        },
-        {
+        });
+      }
+      if (canDelete) {
+        actions.push({
           key: 'delete',
           label: 'Supprimer',
           danger: true,
           confirm: 'Supprimer cet article ?',
           onClick: () => client.delete(`/menu/items/${row._id}`).then(load),
-        },
-      ];
+        });
+      }
+      return actions;
     }
 
     if (sectionMeta.key === 'extras') {
-      return [
-        {
+      const actions = [];
+      if (canEdit) {
+        actions.push({
           key: 'edit',
           label: 'Modifier',
           link: `/menu/extras/${row._id}/edit`,
-        },
-        {
+        });
+      }
+      if (canDelete) {
+        actions.push({
           key: 'delete',
           label: 'Supprimer',
           danger: true,
           confirm: 'Supprimer cet extra ?',
           onClick: () => client.delete(`/menu/extras/${row._id}`).then(load),
-        },
-      ];
+        });
+      }
+      return actions;
     }
 
     return [];
-  }, [sectionMeta, load]);
+  }, [sectionMeta, load, user]);
 
   const columns = useMemo(() => {
     if (!sectionMeta) return [];
@@ -138,20 +157,7 @@ export default function MenuSectionListPage() {
             <div className="size-10 rounded-lg" style={{ background: r.color || '#c2462d' }} />
           )),
         },
-        actionsCell((r) => [
-          {
-            key: 'edit',
-            label: 'Modifier',
-            link: `/menu/categories/${r._id}/edit`,
-          },
-          {
-            key: 'delete',
-            label: 'Supprimer',
-            danger: true,
-            confirm: 'Supprimer cette catégorie ?',
-            onClick: () => client.delete(`/menu/categories/${r._id}`).then(load),
-          },
-        ]),
+        actionsCell(getRowActions),
       ];
     }
 
@@ -163,13 +169,7 @@ export default function MenuSectionListPage() {
           title: 'Catégorie',
           render: (r) => r.category?.name || '—',
         },
-        actionsCell((r) => [
-          {
-            key: 'edit',
-            label: 'Modifier',
-            link: `/menu/subcategories/${r._id}/edit`,
-          },
-        ]),
+        actionsCell(getRowActions),
       ];
     }
 
@@ -202,20 +202,7 @@ export default function MenuSectionListPage() {
           title: 'Catégorie',
           render: (r) => r.category?.name || '—',
         },
-        actionsCell((r) => [
-          {
-            key: 'edit',
-            label: 'Modifier',
-            link: `/menu/items/${r._id}/edit`,
-          },
-          {
-            key: 'delete',
-            label: 'Supprimer',
-            danger: true,
-            confirm: 'Supprimer cet article ?',
-            onClick: () => client.delete(`/menu/items/${r._id}`).then(load),
-          },
-        ]),
+        actionsCell(getRowActions),
       ];
     }
 
@@ -243,39 +230,28 @@ export default function MenuSectionListPage() {
             </Badge>
           ),
         },
-        actionsCell((r) => [
-          {
-            key: 'edit',
-            label: 'Modifier',
-            link: `/menu/extras/${r._id}/edit`,
-          },
-          {
-            key: 'delete',
-            label: 'Supprimer',
-            danger: true,
-            confirm: 'Supprimer cet extra ?',
-            onClick: () => client.delete(`/menu/extras/${r._id}`).then(load),
-          },
-        ]),
+        actionsCell(getRowActions),
       ];
     }
 
     return [];
-  }, [sectionMeta, load]);
+  }, [sectionMeta, getRowActions]);
 
   if (!sectionMeta) {
     return <Navigate to="/menu" replace />;
   }
 
+  const canCreate = sectionMeta && canCreateMenuSection(user, sectionMeta.key);
+
   return (
     <PageShell
       title={sectionMeta.title}
       subtitle={sectionMeta.description}
-      action={(
+      action={canCreate ? (
         <PagePrimaryButton to={sectionMeta.addPath} icon={Plus} size="sm" className="w-auto">
           Créer
         </PagePrimaryButton>
-      )}
+      ) : null}
     >
       {loading ? (
         <TableLoading rows={8} columns={5} />

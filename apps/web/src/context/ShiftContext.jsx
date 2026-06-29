@@ -40,11 +40,14 @@ export function ShiftProvider({ children }) {
   }, [refreshShift]);
 
   const activeShift = shiftMeta?.active_shift || null;
+  const isWaiter = roleKey === 'waiter';
   const isShiftGated = Boolean(
-    usesShifts
-    && shiftMeta?.required
-    && shiftMeta?.manual_start_required
-    && !activeShift
+    isWaiter
+      ? !loading && !activeShift
+      : usesShifts
+        && shiftMeta?.required
+        && shiftMeta?.manual_start_required
+        && !activeShift
   );
 
   const value = useMemo(

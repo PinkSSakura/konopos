@@ -6,13 +6,15 @@ function isShiftRole(roleKey) {
 
 function requiresManualShiftStart(roleKey, establishment) {
   if (!isShiftRole(roleKey)) return false;
-  if (roleKey === 'waiter') {
-    return establishment?.waiter_shift_manual_start !== false;
-  }
+  if (roleKey === 'waiter') return true;
   if (['cook', 'barman'].includes(roleKey)) {
     return establishment?.kitchen_shift_manual_start === true;
   }
   return false;
+}
+
+function waiterRequiresOpenShift(roleKey) {
+  return roleKey === 'waiter';
 }
 
 function usesAutoShift(roleKey, establishment) {
@@ -52,4 +54,5 @@ module.exports = {
   usesAutoShift,
   requiresShiftAmounts,
   shouldAutoStartShiftOnLogin,
+  waiterRequiresOpenShift,
 };

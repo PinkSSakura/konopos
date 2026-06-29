@@ -292,7 +292,7 @@ export default function EstablishmentSettingsPage() {
         waiter_service_served_only: values.waiter_service_served_only,
         service_ready_on_send: values.service_ready_on_send,
         tables_enabled: values.tables_enabled,
-        waiter_shift_manual_start: values.waiter_shift_manual_start,
+        waiter_shift_manual_start: true,
         waiter_quick_pin_mode: values.waiter_quick_pin_mode,
         kitchen_shift_manual_start: values.kitchen_shift_manual_start,
       }, 'Paramètres cuisine / bar, tables et shifts enregistrés');
@@ -507,19 +507,18 @@ export default function EstablishmentSettingsPage() {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <Switch
-                  id="waiter_shift_manual_start"
-                  checked={values.waiter_shift_manual_start}
-                  onCheckedChange={(checked) => updateValue('waiter_shift_manual_start', checked)}
-                />
-                <Label htmlFor="waiter_shift_manual_start">Serveur : démarrage manuel du shift</Label>
-              </div>
+            <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-4">
+              <p className="text-sm font-medium">Serveur : shift ouvert par l&apos;administrateur</p>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <p>Activé : le serveur doit ouvrir son shift (fond de caisse) avant le POS. L&apos;historique reste consultable sans shift ouvert.</p>
-                <p>Désactivé : shift automatique à la connexion, clôturé à la déconnexion ou après 20 min d&apos;inactivité.</p>
-                <p>Connexion PIN depuis SystemPOS : shift auto en arrière-plan jusqu&apos;à clôture manuelle par le serveur.</p>
+                <p>
+                  Un administrateur démarre et clôture les shifts serveur depuis
+                  {' '}
+                  <strong>Administration → Shifts en service</strong>
+                  . Le serveur ne peut pas ouvrir son shift seul.
+                </p>
+                <p>
+                  Sans shift ouvert : accès limité à cette page, à la clôture et à l&apos;historique des paiements.
+                </p>
               </div>
             </div>
 
