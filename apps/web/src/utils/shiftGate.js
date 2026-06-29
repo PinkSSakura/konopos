@@ -6,7 +6,7 @@ import { hasCaisseHubAccess } from './caisseHub';
 /** Routes / menu keys accessible without an open shift (manual mode). */
 export function getShiftGateAllowedKeys(user) {
   const roleKey = user?.role?.role_key;
-  const keys = ['/shift', '/orders'];
+  const keys = ['/shift', '/shift/daily-close', '/orders'];
   if (canViewPaymentHistory(user)) {
     keys.push('/caisse/history', '/caisse');
   }

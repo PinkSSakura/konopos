@@ -1,4 +1,4 @@
-const { Order, OrderItem, Establishment, Shift } = require('../models');
+const { Order, OrderItem, Establishment, Shift, Payment } = require('../models');
 const { getPeriodRange } = require('./shift');
 
 function round2(n) {
@@ -165,13 +165,13 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput, shift
 
   const waiterFilter = waiterOrderFilter(userId);
   const sentTimeFilter = useShiftScope
-    ? {
+    ? { shift: shiftDoc._id }
+    : {
       $or: [
-        { shift: shiftDoc._id },
-        { shift: { $in: [null, undefined] }, sent_to_kitchen_at: { $gte: from, $lte: to } },
+        { sent_to_kitchen_at: { $gte: from, $lte: to } },
+        { createdAt: { $gte: from, $lte: to } },
       ],
-    }
-    : { sent_to_kitchen_at: { $gte: from, $lte: to } };
+    };
 
   const base = {
     establishment: establishmentId,
@@ -282,9 +282,23 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput, shift
     itemLoads.push(Promise.resolve([]));
   }
 
-  const [sentRows, cancelledRows] = await Promise.all(itemLoads);
+  const [sentRows, cancelledRows, paymentRows] = await Promise.all([
+    itemLoads[0],
+    itemLoads[1],
+    sentOrderIds.length
+      ? Payment.find({
+        order: { $in: sentOrderIds },
+        establishment: establishmentId,
+        is_void: false,
+      }).select('amount order')
+      : Promise.resolve([]),
+  ]);
   itemsSent = sentRows;
   itemsReturned = cancelledRows.filter((item) => isReturnedInRange(item, from, to));
+
+  const earnedFromPayments = round2(
+    paymentRows.reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0),
+  );
 
   const {
     paid: itemsPaid,
@@ -345,7 +359,7 @@ async function getWaiterDailyCloseReport(establishmentId, user, dateInput, shift
       unpaid_amount: itemsUnpaidAmount,
       returned_amount: returnedAmount,
       lost_amount: lostAmount,
-      earned_amount: itemsPaidAmount,
+      earned_amount: earnedFromPayments || itemsPaidAmount,
       sent_by_name: sentByName,
       returned_by_name: returnedByName,
       detail_by_name: detailByName,

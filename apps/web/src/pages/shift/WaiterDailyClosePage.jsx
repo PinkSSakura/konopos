@@ -8,7 +8,7 @@ import {
   canSelectWaiterDailyCloseTarget,
   canViewWaiterDailyClose,
 } from '../../utils/shiftAccess';
-import { todayDateString, formatDateLong } from '../../utils/dateFilters';
+import { todayDateString, formatDateLong, formatDateTime } from '../../utils/dateFilters';
 import { downloadPdf } from '../../utils/pdfExport';
 import DatePicker from '../../components/DatePicker';
 import Combobox from '../../components/Combobox';
@@ -91,11 +91,22 @@ function ItemDetailTable({ title, rows, currency, emptyLabel }) {
   );
 }
 
+function formatShiftLabel(shift) {
+  if (!shift) return 'Shift';
+  const start = formatDateTime(shift.clock_in);
+  if (shift.is_active) return `Ouvert — ${start}`;
+  const end = shift.clock_out ? formatDateTime(shift.clock_out) : '—';
+  return `${start} → ${end}`;
+}
+
 export default function WaiterDailyClosePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const [dateStr, setDateStr] = useState(todayDateString());
   const [targetUserId, setTargetUserId] = useState('');
+  const [shiftOptions, setShiftOptions] = useState([]);
+  const [selectedShiftId, setSelectedShiftId] = useState('');
+  const [loadingShifts, setLoadingShifts] = useState(false);
   const [waiters, setWaiters] = useState([]);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -139,11 +150,40 @@ export default function WaiterDailyClosePage() {
     }
   }, [canSelectTarget, loadingWaiters, waiters, targetUserId, user]);
 
-  const load = useCallback(async (date, userId) => {
+  const loadShiftOptions = useCallback(async (userId) => {
+    if (!userId) return;
+    setLoadingShifts(true);
+    try {
+      const params = {};
+      if (canSelectTarget && userId !== user?._id) {
+        params.user_id = userId;
+      }
+      const res = await client.get('/shifts/waiter-close-options', { params });
+      const rows = res.data.data || [];
+      setShiftOptions(rows);
+      const defaultId = res.data.meta?.default_shift_id || rows[0]?._id || '';
+      setSelectedShiftId((prev) => (
+        rows.find((row) => row._id === prev)?._id || defaultId
+      ));
+    } catch (err) {
+      message.error(err.response?.data?.message || 'Erreur chargement shifts');
+      setShiftOptions([]);
+      setSelectedShiftId('');
+    } finally {
+      setLoadingShifts(false);
+    }
+  }, [canSelectTarget, user?._id]);
+
+  const load = useCallback(async (userId, shiftId) => {
     if (!userId) return;
     setLoading(true);
     try {
-      const params = { date: date || undefined };
+      const params = {};
+      if (shiftId) {
+        params.shift_id = shiftId;
+      } else {
+        params.date = dateStr || undefined;
+      }
       if (canSelectTarget && userId !== user?._id) {
         params.user_id = userId;
       }
@@ -155,7 +195,7 @@ export default function WaiterDailyClosePage() {
     } finally {
       setLoading(false);
     }
-  }, [canSelectTarget, user?._id]);
+  }, [canSelectTarget, user?._id, dateStr]);
 
   useEffect(() => {
     if (canSelectTarget) {
@@ -165,9 +205,19 @@ export default function WaiterDailyClosePage() {
 
   useEffect(() => {
     if (canViewWaiterDailyClose(user) && effectiveUserId) {
-      load(dateStr, effectiveUserId);
+      loadShiftOptions(effectiveUserId);
     }
-  }, [user, dateStr, effectiveUserId, load]);
+  }, [user, effectiveUserId, loadShiftOptions]);
+
+  useEffect(() => {
+    if (canViewWaiterDailyClose(user) && effectiveUserId && !loadingShifts) {
+      if (shiftOptions.length && selectedShiftId) {
+        load(effectiveUserId, selectedShiftId);
+      } else if (!shiftOptions.length) {
+        load(effectiveUserId, null);
+      }
+    }
+  }, [user, effectiveUserId, selectedShiftId, shiftOptions.length, loadingShifts, load]);
 
   const waiterOptions = useMemo(() => {
     const entries = waiters.map((entry) => ({
@@ -184,8 +234,18 @@ export default function WaiterDailyClosePage() {
     return entries;
   }, [canSelectTarget, user, waiters]);
 
+  const shiftComboboxOptions = useMemo(
+    () => shiftOptions.map((shift) => ({
+      value: shift._id,
+      label: formatShiftLabel(shift),
+    })),
+    [shiftOptions],
+  );
+
   const buildParams = () => {
-    const params = { date: dateStr || undefined };
+    const params = selectedShiftId
+      ? { shift_id: selectedShiftId }
+      : { date: dateStr || undefined };
     if (canSelectTarget && effectiveUserId !== user?._id) {
       params.user_id = effectiveUserId;
     }
@@ -245,8 +305,9 @@ export default function WaiterDailyClosePage() {
     waiterOptions.find((entry) => entry.value === (targetUserId || user?._id))?.label
     || report?.waiter?.fullname
     || user?.fullname;
+  const selectedShift = shiftOptions.find((s) => s._id === selectedShiftId);
   const toolbarSummary = [
-    formatDateLong(dateStr),
+    selectedShift ? formatShiftLabel(selectedShift) : formatDateLong(dateStr),
     canSelectTarget ? selectedWaiterLabel : null,
   ].filter(Boolean).join(' · ');
 
@@ -271,7 +332,18 @@ export default function WaiterDailyClosePage() {
                   className="w-full"
                 />
               ) : null}
-              <DatePicker value={dateStr} onChange={setDateStr} className="w-full" />
+              {shiftComboboxOptions.length ? (
+                <Combobox
+                  options={shiftComboboxOptions}
+                  value={selectedShiftId}
+                  onValueChange={setSelectedShiftId}
+                  placeholder="Shift"
+                  disabled={loadingShifts || !shiftComboboxOptions.length}
+                  className="w-full"
+                />
+              ) : (
+                <DatePicker value={dateStr} onChange={setDateStr} className="w-full" />
+              )}
             </div>
             <div className="daily-close-toolbar-grid__actions">
               <Button
@@ -352,10 +424,12 @@ export default function WaiterDailyClosePage() {
             </div>
 
             <ItemDetailTable
-              title="Détail par article (jour)"
+              title={selectedShiftId ? 'Détail par article (shift)' : 'Détail par article (jour)'}
               rows={items.detail_by_name}
               currency={currency}
-              emptyLabel="Aucun article ce jour."
+              emptyLabel={selectedShiftId
+                ? 'Aucun article pour ce shift.'
+                : 'Aucun article ce jour.'}
             />
           </>
         )}

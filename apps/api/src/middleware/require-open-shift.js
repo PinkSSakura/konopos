@@ -12,9 +12,12 @@ async function requireOpenShift(req, res, next) {
     const estId = getEstablishmentId(req);
     const active = await findActiveShift(req.user._id, estId);
     if (!active) {
+      const msg = roleKey === 'waiter'
+        ? 'Aucun shift ouvert. Demandez à un administrateur de démarrer votre shift.'
+        : 'Shift fermé. Ouvrez un shift pour continuer.';
       return res.status(423).json({
         success: false,
-        message: 'Shift fermé. Ouvrez un shift pour continuer.',
+        message: msg,
         code: 'SHIFT_REQUIRED',
       });
     }

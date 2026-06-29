@@ -13,6 +13,7 @@ import { useShift } from '../../context/ShiftContext';
 import { getPostShiftStartRoute } from '../../utils/shiftGate';
 import { canViewWaiterDailyClose } from '../../utils/shiftAccess';
 import { endStaffSessionToPin, shouldEndPinSessionOnly } from '../../utils/pinSession';
+import AppSelect from '@/components/ui/AppSelect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -76,6 +77,8 @@ export default function ShiftPage() {
   const [historyPage, setHistoryPage] = useState(1);
   const historyPageSize = 10;
   const [reportDate, setReportDate] = useState(todayDateString());
+  const [closeShiftId, setCloseShiftId] = useState('');
+  const [closeShiftOptions, setCloseShiftOptions] = useState([]);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [dailyClose, setDailyClose] = useState(null);
   const [loadingDailyClose, setLoadingDailyClose] = useState(false);
@@ -90,9 +93,10 @@ export default function ShiftPage() {
     if (!usesDailyCloseExport) return;
     setLoadingDailyClose(true);
     try {
-      const res = await client.get('/shifts/waiter-daily-close', {
-        params: { date: reportDate || undefined },
-      });
+      const params = closeShiftId
+        ? { shift_id: closeShiftId }
+        : { date: reportDate || undefined };
+      const res = await client.get('/shifts/waiter-daily-close', { params });
       setDailyClose(res.data.data);
     } catch (err) {
       setDailyClose(null);
@@ -100,7 +104,20 @@ export default function ShiftPage() {
     } finally {
       setLoadingDailyClose(false);
     }
-  }, [reportDate, usesDailyCloseExport]);
+  }, [reportDate, closeShiftId, usesDailyCloseExport]);
+
+  const loadCloseShiftOptions = useCallback(async () => {
+    if (!usesDailyCloseExport) return;
+    try {
+      const res = await client.get('/shifts/waiter-close-options');
+      const rows = res.data.data || [];
+      setCloseShiftOptions(rows);
+      const defaultId = res.data.meta?.default_shift_id || rows[0]?._id || '';
+      setCloseShiftId((prev) => rows.find((r) => r._id === prev)?._id || defaultId);
+    } catch {
+      setCloseShiftOptions([]);
+    }
+  }, [usesDailyCloseExport]);
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
@@ -130,6 +147,10 @@ export default function ShiftPage() {
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
+
+  useEffect(() => {
+    loadCloseShiftOptions();
+  }, [loadCloseShiftOptions]);
 
   useEffect(() => {
     loadDailyClose();
@@ -199,8 +220,8 @@ export default function ShiftPage() {
         const slug = (user?.fullname || 'serveur').replace(/\s+/g, '-').toLowerCase();
         await downloadPdf(
           '/shifts/waiter-daily-close.pdf',
-          { date: reportDate },
-          `cloture-jour-${slug}-${reportDate}.pdf`,
+          closeParams,
+          `cloture-jour-${slug}-${closeShiftId || reportDate}.pdf`,
         );
       } else {
         await downloadPdf(
@@ -217,11 +238,25 @@ export default function ShiftPage() {
     }
   };
 
-  const dailyCloseCurrency = dailyClose?.currency || 'MAD';
+  const closeParams = useMemo(
+    () => (closeShiftId ? { shift_id: closeShiftId } : { date: reportDate }),
+    [closeShiftId, reportDate],
+  );
+
+  const closeShiftSelectOptions = useMemo(
+    () => closeShiftOptions.map((shift) => ({
+      value: shift._id,
+      label: shift.is_active
+        ? `Ouvert — ${formatDateTime(shift.clock_in)}`
+        : `${formatDateTime(shift.clock_in)} → ${shift.clock_out ? formatDateTime(shift.clock_out) : '—'}`,
+    })),
+    [closeShiftOptions],
+  );
   const dailyCloseOrders = dailyClose?.orders || {};
   const dailyCloseItems = dailyClose?.items || {};
 
-  const showStartForm = manualStartRequired && !activeShift;
+  const showStartForm = manualStartRequired && !activeShift && roleKey !== 'waiter';
+  const showWaiterAdminGate = manualStartRequired && !activeShift && roleKey === 'waiter';
   const showCloseForm = Boolean(activeShift) && manualStartRequired;
 
   const periodToggle = (
@@ -257,7 +292,23 @@ export default function ShiftPage() {
           </CardContent>
         </Card>
       )}
-      {showStartForm ? (
+      {showWaiterAdminGate ? (
+        <div className="shift-start-gate">
+          <Card className="shift-start-gate__card border-0 shadow-none">
+            <CardContent className="flex flex-col items-center px-6 py-8 text-center">
+              <PlayCircle className="shift-start-gate__icon size-12 text-[var(--brand-primary)]" />
+              <h2 className="mb-2 mt-2 text-xl font-semibold">Shift non démarré</h2>
+              <p className="mb-2 max-w-md text-muted-foreground">
+                Demandez à un administrateur (manager, responsable ou superadmin) de démarrer
+                votre shift depuis <strong>Shifts en service</strong>.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Le point de vente et le service sont indisponibles tant que votre shift n&apos;est pas ouvert.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : showStartForm ? (
         <div className="shift-start-gate">
           <Card className="shift-start-gate__card border-0 shadow-none">
             <CardContent className="flex flex-col items-center px-6 py-8 text-center">
@@ -395,11 +446,21 @@ export default function ShiftPage() {
           {usesDailyCloseExport ? (
             <CollapsibleToolbar
               title="Options"
-              summary={formatDate(reportDate)}
+              summary={closeShiftSelectOptions.find((o) => o.value === closeShiftId)?.label || formatDate(reportDate)}
               className="mb-4"
             >
               <div className="collapsible-toolbar__actions">
-                <DatePicker value={reportDate} onChange={setReportDate} className="w-full sm:w-[160px]" />
+                {closeShiftSelectOptions.length ? (
+                  <AppSelect
+                    value={closeShiftId}
+                    onChange={setCloseShiftId}
+                    options={closeShiftSelectOptions}
+                    placeholder="Shift"
+                    className="w-full sm:w-[280px]"
+                  />
+                ) : (
+                  <DatePicker value={reportDate} onChange={setReportDate} className="w-full sm:w-[160px]" />
+                )}
                 <div className="collapsible-toolbar__primary">
                   <Button
                     variant="outline"
@@ -416,7 +477,7 @@ export default function ShiftPage() {
                     className="w-full sm:w-auto"
                     onClick={async () => {
                       try {
-                        await client.post('/shifts/waiter-daily-close/print', { date: reportDate });
+                        await client.post('/shifts/waiter-daily-close/print', closeParams);
                         message.success('Rapport envoyé à l\'imprimante caisse');
                       } catch (err) {
                         message.error(err.response?.data?.message || 'Erreur impression');

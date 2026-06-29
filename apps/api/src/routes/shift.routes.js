@@ -16,6 +16,7 @@ router.get('/history/me', requirePermission('shift_view_own'), shift.listMyShift
 router.get('/daily-summary/me', requirePermission('shift_view_own'), shift.getMyDailySummary);
 router.get('/waiter-daily-close/me', requirePermission('shift_view_own'), shift.getMyWaiterDailyClose);
 router.post('/waiter-daily-close/me/print', requirePermission('shift_view_own'), shift.printMyWaiterDailyClose);
+router.get('/waiter-close-options', requirePermission('shift_view_own'), shift.getWaiterCloseShiftOptions);
 router.get('/waiter-daily-close', requirePermission('shift_view_own'), shift.getWaiterDailyClose);
 router.post('/waiter-daily-close/print', requirePermission('shift_view_own'), shift.printWaiterDailyClose);
 router.get('/waiter-daily-close.pdf', requirePermission('shift_view_own'), shift.exportWaiterDailyClosePdf);

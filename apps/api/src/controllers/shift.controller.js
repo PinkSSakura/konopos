@@ -100,6 +100,13 @@ async function startShift(req, res, next) {
     if (!isShiftRole(roleKey)) {
       return res.status(400).json({ success: false, message: 'Ce rôle n\'utilise pas les shifts.' });
     }
+    if (roleKey === 'waiter') {
+      return res.status(403).json({
+        success: false,
+        message: 'Demandez à un administrateur de démarrer votre shift.',
+        code: 'SHIFT_ADMIN_REQUIRED',
+      });
+    }
     const estId = getEstablishmentId(req);
     const existing = await findActiveShift(req.user._id, estId);
     if (existing) {
@@ -444,6 +451,50 @@ async function getMyDailySummary(req, res, next) {
   }
 }
 
+async function resolveCloseShiftDoc(establishmentId, userId, shiftIdInput) {
+  if (shiftIdInput) {
+    return Shift.findOne({
+      _id: shiftIdInput,
+      establishment: establishmentId,
+      user: userId,
+    });
+  }
+  const active = await findActiveShift(userId, establishmentId);
+  if (active) return active;
+  return Shift.findOne({
+    establishment: establishmentId,
+    user: userId,
+    is_active: false,
+  }).sort({ clock_out: -1, clock_in: -1 });
+}
+
+async function getWaiterCloseShiftOptions(req, res, next) {
+  try {
+    const estId = getEstablishmentId(req);
+    const resolved = await resolveWaiterDailyCloseUser(req, estId);
+    if (resolved.error) {
+      return res.status(resolved.error.status).json({
+        success: false,
+        message: resolved.error.message,
+      });
+    }
+    const userId = resolved.user._id;
+    const shifts = await Shift.find({
+      establishment: estId,
+      user: userId,
+    })
+      .sort({ clock_in: -1 })
+      .limit(40)
+      .select('_id clock_in clock_out is_active shift_label source role_key');
+
+    const data = shifts.map((s) => serializeShiftHistory(s));
+    const defaultId = data.find((s) => s.is_active)?._id || data[0]?._id || null;
+    res.json({ success: true, data, meta: { default_shift_id: defaultId } });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getWaiterDailyClose(req, res, next) {
   try {
     const estId = getEstablishmentId(req);
@@ -455,13 +506,11 @@ async function getWaiterDailyClose(req, res, next) {
       });
     }
 
-    const shiftId = req.query?.shift_id;
-    let shiftDoc = null;
-    if (shiftId) {
-      shiftDoc = await Shift.findOne({ _id: shiftId, establishment: estId });
-    } else {
-      shiftDoc = await findActiveShift(resolved.user._id, estId);
-    }
+    const shiftDoc = await resolveCloseShiftDoc(
+      estId,
+      resolved.user._id,
+      req.query?.shift_id,
+    );
 
     const data = shiftDoc
       ? await getWaiterDailyCloseReportForShift(estId, resolved.user, shiftDoc)
@@ -486,11 +535,18 @@ async function printWaiterDailyClose(req, res, next) {
       });
     }
 
-    const report = await getWaiterDailyCloseReport(
+    const shiftDoc = await resolveCloseShiftDoc(
       estId,
-      resolved.user,
-      req.body?.date || req.query?.date,
+      resolved.user._id,
+      req.body?.shift_id || req.query?.shift_id,
     );
+    const report = shiftDoc
+      ? await getWaiterDailyCloseReportForShift(estId, resolved.user, shiftDoc)
+      : await getWaiterDailyCloseReport(
+        estId,
+        resolved.user,
+        req.body?.date || req.query?.date,
+      );
     const result = await print.printWaiterDailyClose(estId, report);
     if (result.skipped) {
       return res.status(400).json({
@@ -519,11 +575,14 @@ async function exportWaiterDailyClosePdf(req, res, next) {
     }
 
     const establishment = await loadEstablishmentForClose(estId);
-    const report = await getWaiterDailyCloseReport(
+    const shiftDoc = await resolveCloseShiftDoc(
       estId,
-      resolved.user,
-      req.query?.date,
+      resolved.user._id,
+      req.query?.shift_id,
     );
+    const report = shiftDoc
+      ? await getWaiterDailyCloseReportForShift(estId, resolved.user, shiftDoc)
+      : await getWaiterDailyCloseReport(estId, resolved.user, req.query?.date);
     const buffer = await buildWaiterDailyClosePdf(establishment, report);
     const dateSafe = (req.query?.date || new Date().toISOString().slice(0, 10)).replace(/[^\d-]/g, '');
     const waiterSlug = (report.waiter?.fullname || 'serveur').replace(/[^\w.-]+/g, '-').slice(0, 40);
@@ -555,6 +614,7 @@ module.exports = {
   getMyDailySummary,
   getMyWaiterDailyClose,
   printMyWaiterDailyClose,
+  getWaiterCloseShiftOptions,
   getWaiterDailyClose,
   printWaiterDailyClose,
   exportWaiterDailyClosePdf,

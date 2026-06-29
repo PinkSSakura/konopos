@@ -29,9 +29,10 @@ function shouldAutoStartShiftOnLogin(roleKey, establishment, {
   isDirectPin = false,
 } = {}) {
   if (!isShiftRole(roleKey)) return false;
-  if (isDirectPin && roleKey === 'waiter') return true;
+  // Waiters: shift is opened only by admin (Shifts en service).
+  if (roleKey === 'waiter') return false;
   if (usesAutoShift(roleKey, establishment)) return true;
-  if (requiresManualShiftStart(roleKey, establishment) && roleKey === 'waiter' && isPinSession && fromSystemPos) {
+  if (requiresManualShiftStart(roleKey, establishment) && isPinSession && fromSystemPos) {
     return true;
   }
   return false;
